@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Righash — Mining Dashboard</title>
+<link rel="icon" type="image/png" href="RH logo/righash-favicon-32.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root {
+  --bg:       #1F2937;
+  --bg2:      #374151;
+  --bg3:      #2D3748;
+  --bg4:      #4B5563;
+  --border:   #4B5563;
+  --border2:  #6B7280;
+  --text:     #F9FAFB;
+  --muted:    #6B7280;
+  --muted2:   #9CA3AF;
+  --accent:   #10B981;
+  --accent2:  #059669;
+  --gold:     #F5A623;
+  --red:      #EF4444;
+  --green:    #10B981;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { overflow-x: hidden; scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── TICKER ── */
+#ticker-bar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  height: 32px;
+  overflow: hidden;
+  position: relative;
+  z-index: 100;
+}
+#ticker-track {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  white-space: nowrap;
+  will-change: transform;
+}
+.t-item { display: inline-flex; align-items: center; gap: 5px; padding: 0 12px; font-size: 11px; font-family: 'JetBrains Mono', monospace; }
+.t-sym { color: var(--muted2); font-weight: 500; letter-spacing: 0.05em; }
+.t-pct { font-weight: 600; font-size: 10px; }
+.t-pct.up   { color: var(--green); }
+.t-pct.down { color: var(--red); }
+.t-pct.flat { color: var(--muted); }
+.t-dot { color: var(--border2); font-size: 6px; padding: 0 2px; }
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(31,41,55,0.97);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  height: 56px;
+  display: flex; align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--text);
+  flex-shrink: 0;
+}
+.nav-logo-icon { width: 28px; height: 28px; }
+.nav-logo-text { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 500; letter-spacing: 0.02em; }
+.nav-logo-sub { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); display: block; line-height: 1; margin-top: 1px; }
+.nav-spacer { flex: 1; }
+.btn-nav-outline {
+  padding: 7px 18px; border-radius: 4px; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.04em; cursor: pointer; font-family: 'Inter', sans-serif;
+  background: none; border: 1px solid var(--border2); color: var(--muted2);
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-nav-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-nav-accent {
+  padding: 7px 18px; border-radius: 4px; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.04em; cursor: pointer; font-family: 'JetBrains Mono', monospace;
+  background: var(--accent); border: 1px solid var(--accent); color: #fff;
+  transition: background 0.15s;
+}
+.btn-nav-accent:hover { background: var(--accent2); border-color: var(--accent2); }
+#nav-user-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: 4px;
+  border: 1px solid var(--border); background: var(--bg3);
+  color: var(--muted2); font-size: 12px; font-weight: 500; cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.15s;
+}
+#nav-user-btn:hover { border-color: var(--border2); }
+
+/* ── LANDING ── */
+.landing-hero {
+  min-height: calc(100vh - 88px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 80px 24px;
+  position: relative; overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(16,185,129,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(16,185,129,0.03) 0%, transparent 50%);
+}
+.hero-grid {
+  position: absolute; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+}
+.hero-eyebrow {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--accent); font-weight: 500; margin-bottom: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  display: flex; align-items: center; gap: 8px; position: relative; z-index: 1;
+}
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content: ''; display: inline-block; width: 24px; height: 1px; background: var(--accent); opacity: 0.5;
+}
+.hero-h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(32px, 6vw, 64px);
+  font-weight: 500; line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 24px;
+  position: relative; z-index: 1;
+}
+.hero-h1 span { color: var(--accent); }
+.hero-sub {
+  font-size: 16px; color: var(--muted); max-width: 520px; margin: 0 auto 40px;
+  line-height: 1.7; position: relative; z-index: 1;
+}
+.hero-actions { display: flex; gap: 12px; justify-content: center; position: relative; z-index: 1; flex-wrap: wrap; }
+.btn-primary {
+  padding: 13px 32px; border-radius: 4px; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; background: var(--accent); border: 1px solid var(--accent); color: #fff;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-primary:hover { background: var(--accent2); border-color: var(--accent2); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary {
+  padding: 13px 32px; border-radius: 4px; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; background: none;
+  border: 1px solid var(--text); color: var(--text);
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-secondary:hover { border-color: var(--muted2); color: var(--muted2); }
+
+/* Features */
+.features-section { padding: 80px 24px; max-width: 1100px; margin: 0 auto; }
+.section-label {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--accent); font-weight: 600; margin-bottom: 14px;
+}
+.section-h2 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(20px, 3vw, 28px); font-weight: 500;
+  letter-spacing: -0.01em; margin-bottom: 48px; color: var(--text);
+}
+.features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.feature-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 4px; padding: 28px;
+  transition: border-color 0.2s;
+}
+.feature-card:hover { border-color: rgba(16,185,129,0.3); }
+.feature-icon {
+  width: 40px; height: 40px; border-radius: 4px;
+  background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; margin-bottom: 16px;
+}
+.feature-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.feature-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+/* CTA */
+.cta-section {
+  padding: 80px 24px; text-align: center;
+  background: linear-gradient(180deg, transparent, rgba(0,212,170,0.04), transparent);
+}
+.cta-h2 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(20px, 3vw, 32px); font-weight: 500;
+  letter-spacing: -0.01em; margin-bottom: 16px;
+}
+.cta-sub { font-size: 15px; color: var(--muted); margin-bottom: 32px; }
+
+/* ── DASHBOARD ── */
+#dashboard { display: none; }
+.dash-header {
+  padding: 28px 24px 0;
+  max-width: 1400px; margin: 0 auto;
+}
+.dash-greeting {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 4px;
+}
+.dash-sub { font-size: 13px; color: var(--muted); }
+.dash-stats {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px; padding: 20px 24px;
+  max-width: 1400px; margin: 0 auto;
+}
+.stat-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 16px 18px;
+}
+.stat-card-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.stat-card-val { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 600; color: var(--text); }
+.stat-card-val.green { color: var(--accent); }
+.stat-card-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* Miners section */
+.miners-section { padding: 8px 24px 40px; max-width: 1400px; margin: 0 auto; }
+.miners-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+}
+.miners-title { font-size: 13px; font-weight: 600; color: var(--muted2); letter-spacing: 0.05em; text-transform: uppercase; }
+.btn-add-miner {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 18px; border-radius: 4px; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; background: var(--accent); border: 1px solid var(--accent); color: #fff;
+  transition: background 0.15s;
+}
+.btn-add-miner:hover { background: var(--accent2); border-color: var(--accent2); }
+
+/* Empty state */
+.miners-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 80px 24px; gap: 20px; text-align: center;
+  border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px;
+}
+.empty-icon {
+  width: 64px; height: 64px; border-radius: 12px;
+  background: var(--bg3); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 28px;
+}
+.empty-title { font-size: 18px; font-weight: 600; color: var(--text); }
+.empty-sub { font-size: 13px; color: var(--muted); max-width: 360px; line-height: 1.6; }
+.btn-add-big {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 28px; border-radius: 4px; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; background: var(--accent); border: 1px solid var(--accent); color: #fff;
+  transition: background 0.15s, transform 0.1s; margin-top: 8px;
+}
+.btn-add-big:hover { background: var(--accent2); border-color: var(--accent2); transform: translateY(-1px); }
+
+/* Miner cards */
+.miners-grid { display: flex; flex-direction: column; gap: 10px; }
+.miner-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto auto;
+  align-items: center;
+  gap: 0;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.miner-card:hover { border-color: var(--border2); }
+.miner-coin-bar { width: 4px; align-self: stretch; flex-shrink: 0; }
+.miner-info { padding: 14px 16px; min-width: 0; }
+.miner-name-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.miner-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 10px; border-radius: 20px;
+  border: 1px solid currentColor; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.05em; background: transparent;
+  opacity: 0.9;
+}
+.miner-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.miner-type-badge {
+  font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 2px 6px; border-radius: 3px; font-weight: 600;
+  background: var(--bg4); color: var(--muted); border: 1px solid var(--border);
+}
+.miner-meta { font-size: 11px; color: var(--muted); }
+
+.miner-stat { padding: 12px 16px; border-left: 1px solid var(--border); text-align: center; min-width: 80px; }
+.miner-stat-val { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.miner-stat-lbl { font-size: 10px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px; }
+
+.miner-elec { padding: 14px 16px; border-left: 1px solid var(--border); min-width: 140px; }
+.elec-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.elec-ctrl { display: flex; align-items: center; gap: 6px; }
+.elec-btn {
+  width: 22px; height: 22px; border-radius: 4px;
+  background: var(--bg4); border: 1px solid var(--border);
+  color: var(--muted2); font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+  transition: background 0.1s, color 0.1s; flex-shrink: 0;
+}
+.elec-btn:hover { background: var(--bg3); color: var(--text); }
+.elec-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text); min-width: 52px; text-align: center; }
+
+.miner-earnings { padding: 12px 16px; border-left: 1px solid var(--border); text-align: right; min-width: 90px; }
+.miner-earn-net { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--muted); }
+.miner-earn-net.positive { color: var(--accent); }
+.miner-earn-net.negative { color: var(--red); }
+.miner-earn-gross { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; margin-top: 3px; }
+
+.miner-actions { padding: 0 12px; border-left: 1px solid var(--border); }
+.btn-miner-del {
+  width: 28px; height: 28px; border-radius: 4px;
+  background: none; border: 1px solid transparent; color: var(--muted);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.btn-miner-del:hover { background: rgba(240,100,90,0.1); border-color: rgba(240,100,90,0.3); color: var(--red); }
+
+@media (max-width: 700px) {
+  .miner-card { grid-template-columns: auto 1fr; grid-template-rows: auto auto auto; }
+  .miner-stat, .miner-elec, .miner-earnings { border-left: none; border-top: 1px solid var(--border); }
+  .miner-actions { border-left: none; border-top: 1px solid var(--border); }
+}
+
+/* ── AUTH MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(8,11,14,0.88); backdrop-filter: blur(10px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 32px; width: 100%; max-width: 420px;
+  position: relative; max-height: 90vh; overflow-y: auto;
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer;
+  line-height: 1; transition: color 0.15s;
+}
+.modal-close:hover { color: var(--text); }
+.modal-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+.modal-logo svg { width: 28px; height: 28px; }
+.modal-logo-text { font-size: 16px; font-weight: 600; }
+.auth-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.auth-tab {
+  flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600;
+  color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s; background: none; border-top: none; border-left: none; border-right: none;
+  font-family: 'Inter', sans-serif;
+}
+.auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.form-field { margin-bottom: 14px; }
+.form-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-bottom: 6px; display: block; }
+.form-input {
+  width: 100%; padding: 10px 12px; border-radius: 4px;
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  font-size: 14px; font-family: 'Inter', sans-serif;
+  transition: border-color 0.15s;
+}
+.form-input:focus { outline: none; border-color: var(--accent); }
+.form-error { font-size: 12px; color: var(--red); margin-top: 10px; display: none; }
+.btn-form-submit {
+  width: 100%; padding: 12px; border-radius: 4px; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; background: var(--accent); border: 1px solid var(--accent); color: #fff;
+  margin-top: 8px; transition: background 0.15s;
+}
+.btn-form-submit:hover { background: var(--accent2); border-color: var(--accent2); }
+.btn-form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.auth-switch { font-size: 12px; color: var(--muted); text-align: center; margin-top: 16px; }
+.auth-switch a { color: var(--accent); cursor: pointer; }
+
+/* ── ADD MINER MODAL ── */
+.add-modal-box {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 28px; width: 100%; max-width: 600px;
+  position: relative; max-height: 90vh; overflow-y: auto;
+}
+.add-modal-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.add-modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+.type-pills { display: flex; gap: 8px; margin-bottom: 20px; }
+.type-pill {
+  flex: 1; padding: 10px; border-radius: 4px; font-size: 12px; font-weight: 600;
+  text-align: center; cursor: pointer; border: 1px solid var(--border);
+  background: var(--bg3); color: var(--muted);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.type-pill.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,170,0.08); }
+.form-select {
+  width: 100%; padding: 10px 12px; border-radius: 4px;
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  font-size: 13px; font-family: 'Inter', sans-serif;
+  transition: border-color 0.15s; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236B7A8D' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  padding-right: 32px;
+}
+.form-select:focus { outline: none; border-color: var(--accent); }
+.miner-preview {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; padding: 14px; margin-top: 12px;
+  display: none; gap: 20px; flex-wrap: wrap;
+}
+.miner-preview.show { display: flex; }
+.prev-item { font-size: 12px; }
+.prev-label { color: var(--muted); margin-bottom: 2px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+.prev-val { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text); }
+.coin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; margin-top: 6px; max-height: 180px; overflow-y: auto; }
+.coin-pill {
+  padding: 7px 10px; border-radius: 4px; border: 1px solid var(--border);
+  background: var(--bg3); cursor: pointer; transition: border-color 0.15s;
+  display: flex; flex-direction: column; gap: 1px;
+}
+.coin-pill:hover { border-color: var(--border2); }
+.coin-pill.active { border-color: var(--accent) !important; background: rgba(0,212,170,0.08); }
+.coin-pill-sym { font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.coin-pill-name { font-size: 10px; color: var(--muted); }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 12px 18px;
+  font-size: 13px; font-weight: 500; color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  transform: translateY(8px); opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { border-color: rgba(0,212,170,0.4); color: var(--accent); }
+.toast.error { border-color: rgba(240,100,90,0.4); color: var(--red); }
+
+/* Footer */
+footer {
+  border-top: 1px solid var(--border); padding: 32px 24px;
+  text-align: center; color: var(--muted); font-size: 12px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+</style>
+</head>
+<body>
+
+<!-- ── TICKER ── -->
+<div id="ticker-bar"><div id="ticker-track"></div></div>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="#">
+    <svg class="nav-logo-icon" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <g transform="translate(100,100)">
+        <rect x="-35" y="-35" width="70" height="70" rx="6" fill="none" stroke="#ffffff" stroke-width="3"/>
+        <line x1="-12" y1="-35" x2="-12" y2="35" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+        <line x1="12" y1="-35" x2="12" y2="35" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+        <line x1="-35" y1="-12" x2="35" y2="-12" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+        <line x1="-35" y1="12" x2="35" y2="12" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+        <rect x="-45" y="-25" width="10" height="4" fill="#ffffff"/>
+        <rect x="-45" y="-2" width="10" height="4" fill="#ffffff"/>
+        <rect x="-45" y="21" width="10" height="4" fill="#ffffff"/>
+        <rect x="35" y="-25" width="10" height="4" fill="#ffffff"/>
+        <rect x="35" y="-2" width="10" height="4" fill="#ffffff"/>
+        <rect x="35" y="21" width="10" height="4" fill="#ffffff"/>
+        <rect x="-25" y="-45" width="4" height="10" fill="#ffffff"/>
+        <rect x="-2" y="-45" width="4" height="10" fill="#ffffff"/>
+        <rect x="21" y="-45" width="4" height="10" fill="#ffffff"/>
+        <rect x="-25" y="35" width="4" height="10" fill="#ffffff"/>
+        <rect x="-2" y="35" width="4" height="10" fill="#ffffff"/>
+        <rect x="21" y="35" width="4" height="10" fill="#ffffff"/>
+      </g>
+    </svg>
+    <div>
+      <span class="nav-logo-text">righash</span>
+      <span class="nav-logo-sub">mining dashboard</span>
+    </div>
+  </a>
+  <div class="nav-spacer"></div>
+  <button class="btn-nav-outline" id="nav-signin-btn" onclick="openAuthModal('signin')">Sign In</button>
+  <button class="btn-nav-accent" id="nav-signup-btn" onclick="openAuthModal('signup')">Get Started</button>
+  <button id="nav-user-btn" style="display:none;" onclick="openUserMenu()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span id="nav-user-email">—</span>
+  </button>
+</nav>
+
+<!-- ── LANDING ── -->
+<div id="landing">
+  <section class="landing-hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-eyebrow">Mining Intelligence Platform</div>
+    <h1 class="hero-h1">Monitor Your<br><span>Mining Empire</span></h1>
+    <p class="hero-sub">Track all your ASICs and GPUs in one place. Real-time profitability, power costs, and earnings — built for serious miners.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="openAuthModal('signup')">Start Free →</button>
+      <button class="btn-secondary" onclick="openAuthModal('signin')">Sign In</button>
+    </div>
+  </section>
+
+  <section class="features-section">
+    <div class="section-label">Features</div>
+    <h2 class="section-h2">Everything a miner needs</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Live Profitability</div>
+        <div class="feature-desc">Real-time coin prices update your earnings automatically. Know exactly how much you're making every day.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔌</div>
+        <div class="feature-title">Power Cost Tracking</div>
+        <div class="feature-desc">Set your electricity rate and see true net profit per miner after power costs — adjustable to the cent.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">60+ Supported Miners</div>
+        <div class="feature-desc">ASICs and GPUs from Bitmain, MicroBT, Canaan, IceRiver, NVIDIA, AMD and more. All hardware in one place.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🪙</div>
+        <div class="feature-title">Multi-Coin Support</div>
+        <div class="feature-desc">BTC, KASPA, ETH Classic, DOGE, LTC, CKB, Monero, Ravencoin, Ergo and many more mining coins.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <div class="feature-title">Mobile Ready</div>
+        <div class="feature-desc">Check your mining performance from anywhere. Fully responsive dashboard works on any device.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-title">Secure & Private</div>
+        <div class="feature-desc">Your data stays yours. No wallet connections, no API keys required — just hardware tracking.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <h2 class="cta-h2">Ready to optimize<br>your mining?</h2>
+    <p class="cta-sub">Free to use. No credit card required.</p>
+    <button class="btn-primary" onclick="openAuthModal('signup')">Create Free Account →</button>
+  </section>
+
+  <footer>
+    <svg width="16" height="16" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <g transform="translate(100,100)">
+        <rect x="-35" y="-35" width="70" height="70" rx="6" fill="none" stroke="#6B7A8D" stroke-width="4"/>
+        <line x1="-12" y1="-35" x2="-12" y2="35" stroke="#6B7A8D" stroke-width="4" stroke-linecap="round"/>
+        <line x1="12" y1="-35" x2="12" y2="35" stroke="#6B7A8D" stroke-width="4" stroke-linecap="round"/>
+        <line x1="-35" y1="-12" x2="35" y2="-12" stroke="#6B7A8D" stroke-width="4" stroke-linecap="round"/>
+        <line x1="-35" y1="12" x2="35" y2="12" stroke="#6B7A8D" stroke-width="4" stroke-linecap="round"/>
+      </g>
+    </svg>
+    <span>© 2025 Righash. All rights reserved.</span>
+  </footer>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div id="dashboard">
+  <div class="dash-header">
+    <div class="dash-greeting">Good morning, <span id="dash-user-name">Miner</span></div>
+    <div class="dash-sub" id="dash-date">—</div>
+  </div>
+  <div class="dash-stats">
+    <div class="stat-card">
+      <div class="stat-card-label">Daily Earnings</div>
+      <div class="stat-card-val green" id="stat-daily">$0.00</div>
+      <div class="stat-card-sub">gross before electricity</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Net Profit / Day</div>
+      <div class="stat-card-val" id="stat-net">$0.00</div>
+      <div class="stat-card-sub">after electricity costs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Power Consumption</div>
+      <div class="stat-card-val" id="stat-power">0 W</div>
+      <div class="stat-card-sub">total across all miners</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Active Miners</div>
+      <div class="stat-card-val" id="stat-count">0</div>
+      <div class="stat-card-sub">devices tracked</div>
+    </div>
+  </div>
+
+  <div class="miners-section">
+    <div class="miners-toolbar">
+      <div class="miners-title">My Miners</div>
+      <button class="btn-add-miner" onclick="openAddMiner()" id="toolbar-add-btn" style="display:none;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Miner
+      </button>
+    </div>
+
+    <div id="miners-empty" class="miners-empty">
+      <div class="empty-icon">⛏️</div>
+      <div class="empty-title">No miners yet</div>
+      <div class="empty-sub">Add your first miner to start tracking profitability and power costs in real time.</div>
+      <button class="btn-add-big" onclick="openAddMiner()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Your First Miner
+      </button>
+    </div>
+
+    <div id="miners-grid" class="miners-grid" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- ── AUTH MODAL ── -->
+<div class="modal-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuthModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuthModal()">✕</button>
+    <div class="modal-logo">
+      <svg width="28" height="28" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(100,100)">
+          <rect x="-35" y="-35" width="70" height="70" rx="6" fill="none" stroke="#ffffff" stroke-width="4"/>
+          <line x1="-12" y1="-35" x2="-12" y2="35" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+          <line x1="12" y1="-35" x2="12" y2="35" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+          <line x1="-35" y1="-12" x2="35" y2="-12" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+          <line x1="-35" y1="12" x2="35" y2="12" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <span class="modal-logo-text">righash</span>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-signin" onclick="switchAuthTab('signin')">Sign In</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Create Account</button>
+    </div>
+
+    <!-- Sign In -->
+    <div id="panel-signin">
+      <div class="form-field">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="si-email" placeholder="you@example.com" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="si-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')submitSignIn()" />
+      </div>
+      <div class="form-error" id="si-error"></div>
+      <div style="background:var(--bg3); border:1px solid var(--border); border-radius:4px; padding:12px 14px; margin-top:12px;">
+        <label style="display:block; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted2); margin-bottom:8px; font-family:'JetBrains Mono',monospace;">Security check</label>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span id="si-captcha-q" style="font-family:'JetBrains Mono',monospace; font-size:18px; color:var(--text); min-width:80px;"></span>
+          <input type="text" id="si-captcha-a" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="= ?" class="form-input" style="flex:1;" />
+        </div>
+        <p id="si-captcha-err" style="display:none; margin:6px 0 0; font-size:11px; color:var(--red); font-family:'Inter',sans-serif;">Napačen odgovor. Poskusi znova.</p>
+      </div>
+      <button class="btn-form-submit" id="si-btn" onclick="submitSignIn()">Sign In</button>
+      <div class="auth-switch">Don't have an account? <a onclick="switchAuthTab('signup')">Create one free</a></div>
+    </div>
+
+    <!-- Sign Up -->
+    <div id="panel-signup" style="display:none;">
+      <div class="form-field">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="su-email" placeholder="you@example.com" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="su-pw" placeholder="Min. 6 characters" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Confirm Password</label>
+        <input class="form-input" type="password" id="su-pw2" placeholder="••••••••" onkeydown="if(event.key==='Enter')submitSignUp()" />
+      </div>
+      <div class="form-error" id="su-error"></div>
+      <div style="background:var(--bg3); border:1px solid var(--border); border-radius:4px; padding:12px 14px; margin-top:12px;">
+        <label style="display:block; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted2); margin-bottom:8px; font-family:'JetBrains Mono',monospace;">Security check</label>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span id="su-captcha-q" style="font-family:'JetBrains Mono',monospace; font-size:18px; color:var(--text); min-width:80px;"></span>
+          <input type="text" id="su-captcha-a" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="= ?" class="form-input" style="flex:1;" />
+        </div>
+        <p id="su-captcha-err" style="display:none; margin:6px 0 0; font-size:11px; color:var(--red); font-family:'Inter',sans-serif;">Napačen odgovor. Poskusi znova.</p>
+      </div>
+      <button class="btn-form-submit" id="su-btn" onclick="submitSignUp()">Create Account</button>
+      <div id="su-success" style="display:none;text-align:center;padding:16px 0;font-size:13px;color:var(--accent);line-height:1.6;">
+        ✓ Račun ustvarjen!<br><span style="color:var(--muted2);">Preveri e-pošto in klikni potrditveno povezavo, nato se prijavi.</span>
+      </div>
+      <div class="auth-switch">Already have an account? <a onclick="switchAuthTab('signin')">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD MINER MODAL ── -->
+<div class="modal-overlay" id="add-miner-overlay" onclick="if(event.target===this)closeAddMiner()">
+  <div class="add-modal-box">
+    <button class="modal-close" onclick="closeAddMiner()">✕</button>
+    <div class="add-modal-title">Add Miner</div>
+    <div class="add-modal-sub">Select your hardware and the coin you're mining.</div>
+
+    <div class="type-pills">
+      <button class="type-pill active" id="pill-asic" onclick="setMinerType('asic')">⚙️ ASIC Miner</button>
+      <button class="type-pill" id="pill-gpu" onclick="setMinerType('gpu')">🖥️ GPU Rig</button>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label">Select Hardware</label>
+      <select class="form-select" id="hw-select" onchange="onHwSelect()">
+        <option value="">— Select miner —</option>
+      </select>
+    </div>
+
+    <div class="miner-preview" id="hw-preview">
+      <div class="prev-item"><div class="prev-label">Hashrate</div><div class="prev-val" id="prev-hr">—</div></div>
+      <div class="prev-item"><div class="prev-label">Power</div><div class="prev-val" id="prev-pw">—</div></div>
+      <div class="prev-item"><div class="prev-label">Algorithm</div><div class="prev-val" id="prev-algo">—</div></div>
+    </div>
+
+    <div class="form-field" style="margin-top:16px;">
+      <label class="form-label">Coin Being Mined</label>
+      <div class="coin-grid" id="coin-grid"></div>
+    </div>
+
+    <div class="form-field" style="margin-top:16px;">
+      <label class="form-label">Electricity Rate (USD/kWh)</label>
+      <div class="elec-ctrl">
+        <button class="elec-btn" onclick="adjAddElec(-0.01)">−</button>
+        <div class="elec-val" id="add-elec-val">0.10</div>
+        <button class="elec-btn" onclick="adjAddElec(+0.01)">+</button>
+        <span style="font-size:11px;color:var(--muted);margin-left:8px;">default 0.10 USD/kWh</span>
+      </div>
+    </div>
+
+    <div class="form-error" id="add-error"></div>
+    <button class="btn-form-submit" style="margin-top:16px;" onclick="submitAddMiner()">Add to Dashboard</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── SUPABASE ──
+const SUPA_URL = 'https://zmwmvkazkrbhpldjuncj.supabase.co';
+const SUPA_KEY = 'sb_publishable_AukEjVw_fh7EsBwsEbRsIQ_ANlpBDu4';
+const { createClient } = supabase;
+const sb = createClient(SUPA_URL, SUPA_KEY);
+
+// ── HARDWARE DATA ── (comprehensive static list)
+const HARDWARE = [
+  // BTC ASICs — SHA-256 (newest first)
+  { id:'s23hyd3u',  name:'Antminer S23 Hyd 3U',    type:'asic', algo:'SHA-256', coin:'BTC', hr:1160, hrUnit:'TH/s', watts:11020 },
+  { id:'s23e-hyd2u',name:'Antminer S23e Hyd 2U',   type:'asic', algo:'SHA-256', coin:'BTC', hr:865,  hrUnit:'TH/s', watts:8650 },
+  { id:'a4u-hyd',   name:'SealMiner A4 Ultra Hyd',  type:'asic', algo:'SHA-256', coin:'BTC', hr:886,  hrUnit:'TH/s', watts:8372 },
+  { id:'s21e-xp-hyd3u',name:'Antminer S21e XP Hyd 3U',type:'asic',algo:'SHA-256',coin:'BTC',hr:860, hrUnit:'TH/s', watts:11180 },
+  { id:'s23hyd',    name:'Antminer S23 Hyd',        type:'asic', algo:'SHA-256', coin:'BTC', hr:580,  hrUnit:'TH/s', watts:5510 },
+  { id:'m73sp',     name:'WhatsMiner M73S+',        type:'asic', algo:'SHA-256', coin:'BTC', hr:540,  hrUnit:'TH/s', watts:7200 },
+  { id:'s21xpp-hyd',name:'Antminer S21 XP+ Hyd',   type:'asic', algo:'SHA-256', coin:'BTC', hr:500,  hrUnit:'TH/s', watts:5500 },
+  { id:'a3-hyd',    name:'SealMiner A3 Hydro',      type:'asic', algo:'SHA-256', coin:'BTC', hr:500,  hrUnit:'TH/s', watts:6750 },
+  { id:'s21j-xp-hyd',name:'Antminer S21j XP Hyd',  type:'asic', algo:'SHA-256', coin:'BTC', hr:495,  hrUnit:'TH/s', watts:5940 },
+  { id:'s21xp-hyd', name:'Antminer S21 XP Hyd',    type:'asic', algo:'SHA-256', coin:'BTC', hr:473,  hrUnit:'TH/s', watts:5676 },
+  { id:'s23imm',    name:'Antminer S23 Immersion',  type:'asic', algo:'SHA-256', coin:'BTC', hr:442,  hrUnit:'TH/s', watts:5304 },
+  { id:'s21e-xp-hyd',name:'Antminer S21e XP Hyd',  type:'asic', algo:'SHA-256', coin:'BTC', hr:430,  hrUnit:'TH/s', watts:5590 },
+  { id:'m76sp',     name:'WhatsMiner M76S+',        type:'asic', algo:'SHA-256', coin:'BTC', hr:390,  hrUnit:'TH/s', watts:5200 },
+  { id:'s21-hyd',   name:'Antminer S21 Hyd',        type:'asic', algo:'SHA-256', coin:'BTC', hr:335,  hrUnit:'TH/s', watts:5360 },
+  { id:'a4pro-air', name:'SealMiner A4 Pro Air',    type:'asic', algo:'SHA-256', coin:'BTC', hr:336,  hrUnit:'TH/s', watts:3662 },
+  { id:'s23',       name:'Antminer S23',             type:'asic', algo:'SHA-256', coin:'BTC', hr:318,  hrUnit:'TH/s', watts:3498 },
+  { id:'s21xp-imm', name:'Antminer S21 XP Imm.',   type:'asic', algo:'SHA-256', coin:'BTC', hr:300,  hrUnit:'TH/s', watts:4050 },
+  { id:'a16xp',     name:'Canaan Avalon A16XP-300T',type:'asic', algo:'SHA-256', coin:'BTC', hr:300,  hrUnit:'TH/s', watts:3850 },
+  { id:'a3pro-air', name:'SealMiner A3 Pro Air',    type:'asic', algo:'SHA-256', coin:'BTC', hr:290,  hrUnit:'TH/s', watts:3625 },
+  { id:'s21xp',     name:'Antminer S21 XP',         type:'asic', algo:'SHA-256', coin:'BTC', hr:270,  hrUnit:'TH/s', watts:3645 },
+  { id:'m70sp',     name:'WhatsMiner M70S+',        type:'asic', algo:'SHA-256', coin:'BTC', hr:244,  hrUnit:'TH/s', watts:3140 },
+  { id:'s21pro',    name:'Antminer S21 Pro',        type:'asic', algo:'SHA-256', coin:'BTC', hr:234,  hrUnit:'TH/s', watts:3510 },
+  { id:'s21',       name:'Antminer S21',            type:'asic', algo:'SHA-256', coin:'BTC', hr:200,  hrUnit:'TH/s', watts:3500 },
+  { id:'m60s',      name:'WhatsMiner M60S',         type:'asic', algo:'SHA-256', coin:'BTC', hr:186,  hrUnit:'TH/s', watts:3441 },
+  { id:'a1466i',    name:'Canaan A1466I',            type:'asic', algo:'SHA-256', coin:'BTC', hr:150,  hrUnit:'TH/s', watts:3400 },
+  { id:'s19xp-hyd', name:'Antminer S19 XP Hyd',    type:'asic', algo:'SHA-256', coin:'BTC', hr:257,  hrUnit:'TH/s', watts:5065 },
+  { id:'s19xp',     name:'Antminer S19 XP',         type:'asic', algo:'SHA-256', coin:'BTC', hr:140,  hrUnit:'TH/s', watts:3010 },
+  { id:'m50s',      name:'WhatsMiner M50S',         type:'asic', algo:'SHA-256', coin:'BTC', hr:126,  hrUnit:'TH/s', watts:3276 },
+  { id:'s19pro',    name:'Antminer S19 Pro',        type:'asic', algo:'SHA-256', coin:'BTC', hr:110,  hrUnit:'TH/s', watts:3250 },
+  { id:'s19jpro',   name:'Antminer S19j Pro',       type:'asic', algo:'SHA-256', coin:'BTC', hr:104,  hrUnit:'TH/s', watts:3068 },
+  { id:'s19',       name:'Antminer S19',            type:'asic', algo:'SHA-256', coin:'BTC', hr:95,   hrUnit:'TH/s', watts:3250 },
+  { id:'a1246',     name:'AvalonMiner A1246',       type:'asic', algo:'SHA-256', coin:'BTC', hr:90,   hrUnit:'TH/s', watts:3420 },
+  { id:'m30spp',    name:'WhatsMiner M30S++',       type:'asic', algo:'SHA-256', coin:'BTC', hr:112,  hrUnit:'TH/s', watts:3472 },
+  { id:'m30s',      name:'WhatsMiner M30S',         type:'asic', algo:'SHA-256', coin:'BTC', hr:88,   hrUnit:'TH/s', watts:3344 },
+  { id:'m7ds',      name:'WhatsMiner M7DS',         type:'asic', algo:'SHA-256', coin:'BTC', hr:680,  hrUnit:'TH/s', watts:9200 },
+  { id:'a4pro-hyd', name:'SealMiner A4 Pro Hydro',  type:'asic', algo:'SHA-256', coin:'BTC', hr:680,  hrUnit:'TH/s', watts:7412 },
+  { id:'a3pro-hyd', name:'SealMiner A3 Pro Hydro',  type:'asic', algo:'SHA-256', coin:'BTC', hr:660,  hrUnit:'TH/s', watts:8250 },
+  { id:'bitaxe602', name:'Bitaxe Gamma 602 (solo)', type:'asic', algo:'SHA-256', coin:'BTC', hr:1.3,  hrUnit:'TH/s', watts:15 },
+  { id:'bitaxetouch',name:'Bitaxe Touch (solo)',    type:'asic', algo:'SHA-256', coin:'BTC', hr:1.6,  hrUnit:'TH/s', watts:22 },
+  { id:'bitaxemax', name:'Bitaxe Max (solo)',       type:'asic', algo:'SHA-256', coin:'BTC', hr:0.4,  hrUnit:'TH/s', watts:15 },
+
+  // LTC/DOGE ASICs — Scrypt
+  { id:'l11-hyd2u', name:'Antminer L11 Hyd 2U',    type:'asic', algo:'Scrypt',  coin:'DOGE', hr:35,   hrUnit:'GH/s', watts:5775 },
+  { id:'l11-hyd6u', name:'Antminer L11 Hyd 6U',    type:'asic', algo:'Scrypt',  coin:'DOGE', hr:33,   hrUnit:'GH/s', watts:5676 },
+  { id:'l9-hyd2u',  name:'Antminer L9 Hyd 2U',     type:'asic', algo:'Scrypt',  coin:'DOGE', hr:27,   hrUnit:'GH/s', watts:5670 },
+  { id:'dl1-air',   name:'SealMiner DL1 Air',       type:'asic', algo:'Scrypt',  coin:'DOGE', hr:25,   hrUnit:'GH/s', watts:3725 },
+  { id:'l11-pro',   name:'Antminer L11 Pro',        type:'asic', algo:'Scrypt',  coin:'DOGE', hr:21,   hrUnit:'GH/s', watts:3612 },
+  { id:'l11',       name:'Antminer L11',            type:'asic', algo:'Scrypt',  coin:'DOGE', hr:20,   hrUnit:'GH/s', watts:3680 },
+  { id:'volcminer-d3',name:'VolcMiner D3',          type:'asic', algo:'Scrypt',  coin:'DOGE', hr:20,   hrUnit:'GH/s', watts:3580 },
+  { id:'volcminer-d1pro',name:'VolcMiner D1 Pro',   type:'asic', algo:'Scrypt',  coin:'DOGE', hr:20,   hrUnit:'GH/s', watts:3700 },
+  { id:'dgp2',      name:'ElphaPex DG2+',           type:'asic', algo:'Scrypt',  coin:'DOGE', hr:20.5, hrUnit:'GH/s', watts:3900 },
+  { id:'dg2',       name:'ElphaPex DG2',            type:'asic', algo:'Scrypt',  coin:'DOGE', hr:18,   hrUnit:'GH/s', watts:3960 },
+  { id:'l9',        name:'Antminer L9',             type:'asic', algo:'Scrypt',  coin:'DOGE', hr:16,   hrUnit:'GH/s', watts:3360 },
+  { id:'fluminer-l3',name:'Fluminer L3',            type:'asic', algo:'Scrypt',  coin:'LTC',  hr:9.5,  hrUnit:'GH/s', watts:1700 },
+  { id:'l7',        name:'Antminer L7',             type:'asic', algo:'Scrypt',  coin:'LTC',  hr:9.5,  hrUnit:'GH/s', watts:3425 },
+  { id:'l7-doge',   name:'Antminer L7 (DOGE)',      type:'asic', algo:'Scrypt',  coin:'DOGE', hr:9.5,  hrUnit:'GH/s', watts:3425 },
+  { id:'fluminer-l1pro',name:'Fluminer L1 Pro',     type:'asic', algo:'Scrypt',  coin:'LTC',  hr:6,    hrUnit:'GH/s', watts:1400 },
+  { id:'fluminer-l1',name:'Fluminer L1',            type:'asic', algo:'Scrypt',  coin:'LTC',  hr:5.3,  hrUnit:'GH/s', watts:1200 },
+  { id:'m32',       name:'WhatsMiner M32',          type:'asic', algo:'Scrypt',  coin:'LTC',  hr:4,    hrUnit:'GH/s', watts:3360 },
+  { id:'dg2-mini',  name:'ElphaPex DG2 Mini',       type:'asic', algo:'Scrypt',  coin:'DOGE', hr:2.4,  hrUnit:'GH/s', watts:530 },
+  { id:'fluminer-l2',name:'Fluminer L2',            type:'asic', algo:'Scrypt',  coin:'LTC',  hr:1,    hrUnit:'GH/s', watts:230 },
+
+  // KASPA ASICs — kHeavyHash (newest/most powerful first)
+  { id:'ks7-45',    name:'Antminer KS7 (45TH)',     type:'asic', algo:'kHeavyHash', coin:'KAS', hr:45,   hrUnit:'TH/s', watts:3080 },
+  { id:'ks7-40',    name:'Antminer KS7 (40TH)',     type:'asic', algo:'kHeavyHash', coin:'KAS', hr:40,   hrUnit:'TH/s', watts:3080 },
+  { id:'ks7-ir',    name:'IceRiver KS7',            type:'asic', algo:'kHeavyHash', coin:'KAS', hr:30,   hrUnit:'TH/s', watts:3500 },
+  { id:'ks5-pro',   name:'Antminer KS5 Pro',        type:'asic', algo:'kHeavyHash', coin:'KAS', hr:21,   hrUnit:'TH/s', watts:3150 },
+  { id:'ks5',       name:'Antminer KS5',            type:'asic', algo:'kHeavyHash', coin:'KAS', hr:20,   hrUnit:'TH/s', watts:3000 },
+  { id:'ks5ir',     name:'IceRiver KS5',            type:'asic', algo:'kHeavyHash', coin:'KAS', hr:20,   hrUnit:'TH/s', watts:3200 },
+  { id:'ks5m',      name:'IceRiver KS5M',           type:'asic', algo:'kHeavyHash', coin:'KAS', hr:15,   hrUnit:'TH/s', watts:3400 },
+  { id:'ks5l',      name:'IceRiver KS5L',           type:'asic', algo:'kHeavyHash', coin:'KAS', hr:12,   hrUnit:'TH/s', watts:3400 },
+  { id:'ks6pro+',   name:'DragonBall KS6 Pro+',     type:'asic', algo:'kHeavyHash', coin:'KAS', hr:11,   hrUnit:'TH/s', watts:3600 },
+  { id:'bm-ks-max', name:'iBeLink BM-KS Max',       type:'asic', algo:'kHeavyHash', coin:'KAS', hr:10.5, hrUnit:'TH/s', watts:3400 },
+  { id:'ks6pro',    name:'DragonBall KS6 Pro',      type:'asic', algo:'kHeavyHash', coin:'KAS', hr:10.5, hrUnit:'TH/s', watts:3600 },
+  { id:'ks3-9t',    name:'Antminer KS3 (9.4TH)',    type:'asic', algo:'kHeavyHash', coin:'KAS', hr:9.4,  hrUnit:'TH/s', watts:3500 },
+  { id:'ks3',       name:'Antminer KS3 (8.3TH)',    type:'asic', algo:'kHeavyHash', coin:'KAS', hr:8.3,  hrUnit:'TH/s', watts:3188 },
+  { id:'ks3ir',     name:'IceRiver KS3',            type:'asic', algo:'kHeavyHash', coin:'KAS', hr:8,    hrUnit:'TH/s', watts:3200 },
+  { id:'ks3m',      name:'IceRiver KS3M',           type:'asic', algo:'kHeavyHash', coin:'KAS', hr:6,    hrUnit:'TH/s', watts:3400 },
+  { id:'e-ka1m',    name:'Goldshell E-KA1M',        type:'asic', algo:'kHeavyHash', coin:'KAS', hr:5.5,  hrUnit:'TH/s', watts:1800 },
+  { id:'ks7-lite',  name:'IceRiver KS7 Lite',       type:'asic', algo:'kHeavyHash', coin:'KAS', hr:4.2,  hrUnit:'TH/s', watts:500 },
+  { id:'ka-box-pro',name:'Goldshell KA-BOX Pro',    type:'asic', algo:'kHeavyHash', coin:'KAS', hr:1.6,  hrUnit:'TH/s', watts:600 },
+  { id:'ka-box',    name:'Goldshell KA-BOX',        type:'asic', algo:'kHeavyHash', coin:'KAS', hr:1.18, hrUnit:'TH/s', watts:400 },
+  { id:'ks2',       name:'IceRiver KS2',            type:'asic', algo:'kHeavyHash', coin:'KAS', hr:2,    hrUnit:'TH/s', watts:1200 },
+  { id:'ks2-lite',  name:'IceRiver KS2 Lite',       type:'asic', algo:'kHeavyHash', coin:'KAS', hr:2,    hrUnit:'TH/s', watts:500 },
+  { id:'ks1',       name:'IceRiver KS1',            type:'asic', algo:'kHeavyHash', coin:'KAS', hr:1,    hrUnit:'TH/s', watts:600 },
+  { id:'ks0ultra',  name:'IceRiver KS0 Ultra',      type:'asic', algo:'kHeavyHash', coin:'KAS', hr:400,  hrUnit:'GH/s', watts:100 },
+  { id:'ks0pro',    name:'IceRiver KS0 Pro',        type:'asic', algo:'kHeavyHash', coin:'KAS', hr:200,  hrUnit:'GH/s', watts:100 },
+  { id:'ks0',       name:'IceRiver KS0',            type:'asic', algo:'kHeavyHash', coin:'KAS', hr:100,  hrUnit:'GH/s', watts:65 },
+
+  // CKB ASICs — Eaglesong
+  { id:'k7',        name:'Antminer K7',             type:'asic', algo:'Eaglesong', coin:'CKB', hr:63.5, hrUnit:'TH/s', watts:3080 },
+  { id:'bm-n3-max', name:'iBeLink BM-N3 Max',       type:'asic', algo:'Eaglesong', coin:'CKB', hr:30,   hrUnit:'TH/s', watts:3300 },
+  { id:'bm-n3',     name:'iBeLink BM-N3',           type:'asic', algo:'Eaglesong', coin:'CKB', hr:25,   hrUnit:'TH/s', watts:3300 },
+  { id:'ck6',       name:'Goldshell CK6',           type:'asic', algo:'Eaglesong', coin:'CKB', hr:19.3, hrUnit:'TH/s', watts:3300 },
+  { id:'ck6-se',    name:'Goldshell CK6-SE',        type:'asic', algo:'Eaglesong', coin:'CKB', hr:17,   hrUnit:'TH/s', watts:3300 },
+  { id:'ck5',       name:'Goldshell CK5',           type:'asic', algo:'Eaglesong', coin:'CKB', hr:12,   hrUnit:'TH/s', watts:2400 },
+  { id:'bm-n1',     name:'iBeLink BM-N1',           type:'asic', algo:'Eaglesong', coin:'CKB', hr:6.6,  hrUnit:'TH/s', watts:2400 },
+  { id:'ck-lite',   name:'Goldshell CK Lite',       type:'asic', algo:'Eaglesong', coin:'CKB', hr:6.3,  hrUnit:'TH/s', watts:1200 },
+  { id:'c1-pro',    name:'Toddminer C1 PRO',        type:'asic', algo:'Eaglesong', coin:'CKB', hr:3,    hrUnit:'TH/s', watts:2700 },
+  { id:'ck-box2',   name:'Goldshell CK-Box 2',      type:'asic', algo:'Eaglesong', coin:'CKB', hr:2.1,  hrUnit:'TH/s', watts:400 },
+  { id:'c1',        name:'Toddminer C1',            type:'asic', algo:'Eaglesong', coin:'CKB', hr:1.55, hrUnit:'TH/s', watts:1380 },
+  { id:'k5',        name:'Antminer K5',             type:'asic', algo:'Eaglesong', coin:'CKB', hr:1.13, hrUnit:'TH/s', watts:1580 },
+  { id:'ck-box',    name:'Goldshell CK-Box',        type:'asic', algo:'Eaglesong', coin:'CKB', hr:1.05, hrUnit:'TH/s', watts:215 },
+
+  // ETH Classic — Etchash (GPU)
+  { id:'rtx4090',   name:'NVIDIA RTX 4090',         type:'gpu',  algo:'Etchash',    coin:'ETC', hr:130,  hrUnit:'MH/s', watts:320 },
+  { id:'rtx4080',   name:'NVIDIA RTX 4080',         type:'gpu',  algo:'Etchash',    coin:'ETC', hr:96,   hrUnit:'MH/s', watts:260 },
+  { id:'rtx4070ti', name:'NVIDIA RTX 4070 Ti',      type:'gpu',  algo:'Etchash',    coin:'ETC', hr:76,   hrUnit:'MH/s', watts:200 },
+  { id:'rtx3090',   name:'NVIDIA RTX 3090',         type:'gpu',  algo:'Etchash',    coin:'ETC', hr:121,  hrUnit:'MH/s', watts:290 },
+  { id:'rtx3080',   name:'NVIDIA RTX 3080',         type:'gpu',  algo:'Etchash',    coin:'ETC', hr:93,   hrUnit:'MH/s', watts:220 },
+  { id:'rtx3070',   name:'NVIDIA RTX 3070',         type:'gpu',  algo:'Etchash',    coin:'ETC', hr:61,   hrUnit:'MH/s', watts:115 },
+  { id:'rtx3060ti', name:'NVIDIA RTX 3060 Ti',      type:'gpu',  algo:'Etchash',    coin:'ETC', hr:61,   hrUnit:'MH/s', watts:120 },
+  { id:'rtx3060',   name:'NVIDIA RTX 3060',         type:'gpu',  algo:'Etchash',    coin:'ETC', hr:47,   hrUnit:'MH/s', watts:115 },
+  { id:'rx6800xt',  name:'AMD RX 6800 XT',          type:'gpu',  algo:'Etchash',    coin:'ETC', hr:63,   hrUnit:'MH/s', watts:165 },
+  { id:'rx5700xt',  name:'AMD RX 5700 XT',          type:'gpu',  algo:'Etchash',    coin:'ETC', hr:54,   hrUnit:'MH/s', watts:130 },
+  { id:'rx580',     name:'AMD RX 580',              type:'gpu',  algo:'Etchash',    coin:'ETC', hr:30,   hrUnit:'MH/s', watts:135 },
+
+  // XMR — RandomX
+  { id:'x9',        name:'Antminer X9',             type:'asic', algo:'RandomX',    coin:'XMR', hr:1000, hrUnit:'KH/s', watts:2472 },
+  { id:'rx-xmr',    name:'AMD RX 6800 XT (XMR)',   type:'gpu',  algo:'RandomX',    coin:'XMR', hr:14,   hrUnit:'KH/s', watts:170 },
+  { id:'rtx3080xmr',name:'RTX 3080 (XMR)',         type:'gpu',  algo:'RandomX',    coin:'XMR', hr:7,    hrUnit:'KH/s', watts:220 },
+
+  // RVN — KawPow
+  { id:'rtx4090rvn',name:'RTX 4090 (RVN)',         type:'gpu',  algo:'KawPow',     coin:'RVN', hr:58,   hrUnit:'MH/s', watts:350 },
+  { id:'rtx3080rvn',name:'RTX 3080 (RVN)',         type:'gpu',  algo:'KawPow',     coin:'RVN', hr:29,   hrUnit:'MH/s', watts:230 },
+  { id:'rtx3070rvn',name:'RTX 3070 (RVN)',         type:'gpu',  algo:'KawPow',     coin:'RVN', hr:20,   hrUnit:'MH/s', watts:130 },
+
+  // ERGO — Autolykos
+  { id:'rtx4090erg',name:'RTX 4090 (ERGO)',        type:'gpu',  algo:'Autolykos',  coin:'ERGO',hr:330,  hrUnit:'MH/s', watts:350 },
+  { id:'rtx3080erg',name:'RTX 3080 (ERGO)',        type:'gpu',  algo:'Autolykos',  coin:'ERGO',hr:220,  hrUnit:'MH/s', watts:250 },
+  { id:'rtx3070erg',name:'RTX 3070 (ERGO)',        type:'gpu',  algo:'Autolykos',  coin:'ERGO',hr:164,  hrUnit:'MH/s', watts:120 },
+
+  // ALPH — Blake3
+  { id:'a1346alph', name:'Antminer AL1 (ALPH)',    type:'asic', algo:'Blake3',     coin:'ALPH',hr:10,   hrUnit:'TH/s', watts:3500 },
+  { id:'rtx3080alph',name:'RTX 3080 (ALPH)',       type:'gpu',  algo:'Blake3',     coin:'ALPH',hr:2.5,  hrUnit:'GH/s', watts:220 },
+
+  // ZEC — Equihash
+  { id:'z15pro',    name:'Antminer Z15 Pro',        type:'asic', algo:'Equihash',   coin:'ZEC', hr:840,  hrUnit:'KH/s', watts:2780 },
+  { id:'z15j',      name:'Antminer Z15J',           type:'asic', algo:'Equihash',   coin:'ZEC', hr:580,  hrUnit:'KH/s', watts:1500 },
+  { id:'z15',       name:'Antminer Z15',            type:'asic', algo:'Equihash',   coin:'ZEC', hr:420,  hrUnit:'KH/s', watts:1510 },
+  { id:'a9pp',      name:'Innosilicon A9++ ZMaster',type:'asic', algo:'Equihash',   coin:'ZEC', hr:140,  hrUnit:'KH/s', watts:1550 },
+  { id:'a9p',       name:'Innosilicon A9+ ZMaster', type:'asic', algo:'Equihash',   coin:'ZEC', hr:120,  hrUnit:'KH/s', watts:1550 },
+  { id:'z11',       name:'Antminer Z11',            type:'asic', algo:'Equihash',   coin:'ZEC', hr:135,  hrUnit:'KH/s', watts:1418 },
+  { id:'a9',        name:'Innosilicon A9 ZMaster',  type:'asic', algo:'Equihash',   coin:'ZEC', hr:50,   hrUnit:'KH/s', watts:620 },
+  { id:'z9',        name:'Antminer Z9',             type:'asic', algo:'Equihash',   coin:'ZEC', hr:42,   hrUnit:'KH/s', watts:970 },
+  { id:'z9mini',    name:'Antminer Z9 Mini',        type:'asic', algo:'Equihash',   coin:'ZEC', hr:10,   hrUnit:'KH/s', watts:300 },
+];
+
+// ── COIN DATA ──
+const COINS = [
+  { sym:'BTC',  name:'Bitcoin',        color:'#F7931A', cgId:'bitcoin' },
+  { sym:'ETH',  name:'Ethereum',       color:'#627EEA', cgId:'ethereum' },
+  { sym:'ETC',  name:'Ethereum Classic',color:'#328162',cgId:'ethereum-classic' },
+  { sym:'LTC',  name:'Litecoin',       color:'#BFBBBB', cgId:'litecoin' },
+  { sym:'DOGE', name:'Dogecoin',       color:'#C2A633', cgId:'dogecoin' },
+  { sym:'KAS',  name:'Kaspa',          color:'#70C7BA', cgId:'kaspa' },
+  { sym:'CKB',  name:'Nervos CKB',     color:'#3CC68A', cgId:'nervos-network' },
+  { sym:'XMR',  name:'Monero',         color:'#FF6600', cgId:'monero' },
+  { sym:'RVN',  name:'Ravencoin',      color:'#384182', cgId:'ravencoin' },
+  { sym:'ERGO', name:'Ergo',           color:'#FF5052', cgId:'ergo' },
+  { sym:'ZEC',  name:'Zcash',          color:'#F4B728', cgId:'zcash' },
+  { sym:'DASH', name:'Dash',           color:'#008CE7', cgId:'dash' },
+  { sym:'BCH',  name:'Bitcoin Cash',   color:'#8DC351', cgId:'bitcoin-cash' },
+  { sym:'ALPH', name:'Alephium',       color:'#FF4B1F', cgId:'alephium' },
+  { sym:'HNS',  name:'Handshake',      color:'#1967D2', cgId:'handshake' },
+  { sym:'DGB',  name:'DigiByte',       color:'#006AD2', cgId:'digibyte' },
+  { sym:'FLUX',  name:'Flux',          color:'#2B61D1', cgId:'flux' },
+  { sym:'VTC',  name:'Vertcoin',       color:'#1B5E20', cgId:'vertcoin' },
+  { sym:'KDA',  name:'Kadena',         color:'#ED098F', cgId:'kadena' },
+  { sym:'SC',   name:'Siacoin',        color:'#1ED660', cgId:'siacoin' },
+];
+
+// ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
+// Live values fetched from WhatToMine via edge function and stored in wtmPerUnit
+const NET_HR = {
+  'BTC':  { perUnit: 4.6e-7,  unit: 'TH/s' },
+  'LTC':  { perUnit: 1.26e-3, unit: 'GH/s' },
+  'DOGE': { perUnit: 4.46,    unit: 'GH/s' },
+  'KAS':  { perUnit: 7.83,    unit: 'TH/s' },
+  'CKB':  { perUnit: 58.5,    unit: 'TH/s' },  // WTM 0.0585/GH × 1000 = per TH/s
+  'ETC':  { perUnit: 6.7e-5,  unit: 'MH/s' },
+  'XMR':  { perUnit: 6.7e-5,  unit: 'KH/s' },
+  'RVN':  { perUnit: 0.144,   unit: 'MH/s' },
+  'ERGO': { perUnit: 3.6e-4,  unit: 'MH/s' },
+  'ZEC':  { perUnit: 9.8e-5,  unit: 'KSol/s' },
+};
+
+// Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
+let wtmPerUnit = {};
+
+// WhatToMine coin IDs. scale = multiply estimated_rewards to match miner's stored hashrate unit.
+// e.g. WTM uses GH/s for CKB but miners store TH/s → scale 1000 (1 TH = 1000 GH)
+const WTM_COINS = {
+  BTC:  { id: 1,   scale: 1    },  // WTM: TH/s,   miner: TH/s
+  LTC:  { id: 4,   scale: 1    },  // WTM: GH/s,   miner: GH/s
+  DOGE: { id: 6,   scale: 1    },  // WTM: GH/s,   miner: GH/s
+  XMR:  { id: 101, scale: 1    },  // WTM: KH/s,   miner: KH/s
+  ZEC:  { id: 166, scale: 1    },  // WTM: KSol/s, miner: KSol/s
+  ETC:  { id: 162, scale: 1    },  // WTM: MH/s,   miner: MH/s
+  RVN:  { id: 234, scale: 1    },  // WTM: MH/s,   miner: MH/s
+  ERGO: { id: 340, scale: 1    },  // WTM: MH/s,   miner: MH/s
+  CKB:  { id: 321, scale: 1000 },  // WTM: GH/s,   miner: TH/s → ×1000
+  KAS:  { id: 352, scale: 1    },  // WTM: TH/s,   miner: TH/s
+};
+
+// codetabs.com CORS proxy → WhatToMine (free, no auth required)
+const WTM_BASE = 'https://api.codetabs.com/v1/proxy?quest=https://whattomine.com';
+
+async function fetchWtmProfitability() {
+  try {
+    const coins = Object.keys(WTM_COINS);
+    const results = await Promise.allSettled(
+      coins.map(sym => {
+        const id = WTM_COINS[sym].id;
+        const url = `${WTM_BASE}/coins/${id}.json?hr=1&p=0&fee=0&cost=0&cost_currency=USD`;
+        return fetch(url)
+          .then(r => r.ok ? r.json() : null)
+          .then(d => ({ sym, d }));
+      })
+    );
+    results.forEach(r => {
+      if (r.status !== 'fulfilled' || !r.value?.d) return;
+      const { sym, d } = r.value;
+      // WhatToMine returns estimated_rewards for hr=1. Apply scale to match miner's stored unit.
+      if (d.estimated_rewards) {
+        const scale = WTM_COINS[sym]?.scale || 1;
+        wtmPerUnit[sym] = parseFloat(d.estimated_rewards) * scale;
+      }
+    });
+    if (userMiners.length) renderMiners();
+  } catch (e) {
+    console.warn('WTM fetch failed, using fallback values', e);
+  }
+}
+
+// ── STATE ──
+let currentUser = null;
+let userMiners = [];
+let coinPrices = {};
+let addMinerType = 'asic';
+let addElecRate = 0.10;
+let addSelectedCoin = null;
+
+// ── TICKER ──
+async function initTicker() {
+  const track = document.getElementById('ticker-track');
+  if (!track) return;
+
+  // Metals/financial from metals-trade edge function
+  let financial = [];
+  try {
+    const r = await fetch('https://xurgxkrnmutmocqbjffw.supabase.co/functions/v1/clever-responder');
+    if (r.ok) financial = await r.json();
+  } catch {}
+
+  // Crypto from CoinGecko
+  let crypto = {};
+  try {
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,dogecoin,kaspa,nervos-network,monero,ethereum-classic,ravencoin,ergo,zcash&vs_currencies=usd&include_24hr_change=true');
+    if (r.ok) crypto = await r.json();
+    // Store for profitability
+    if (crypto['bitcoin'])          coinPrices['BTC']  = crypto['bitcoin'].usd;
+    if (crypto['ethereum'])         coinPrices['ETH']  = crypto['ethereum'].usd;
+    if (crypto['dogecoin'])         coinPrices['DOGE'] = crypto['dogecoin'].usd;
+    if (crypto['kaspa'])            coinPrices['KAS']  = crypto['kaspa'].usd;
+    if (crypto['nervos-network'])   coinPrices['CKB']  = crypto['nervos-network'].usd;
+    if (crypto['monero'])           coinPrices['XMR']  = crypto['monero'].usd;
+    if (crypto['ethereum-classic']) coinPrices['ETC']  = crypto['ethereum-classic'].usd;
+    if (crypto['ravencoin'])        coinPrices['RVN']  = crypto['ravencoin'].usd;
+    if (crypto['ergo'])             coinPrices['ERGO'] = crypto['ergo'].usd;
+    if (crypto['zcash'])            coinPrices['ZEC']  = crypto['zcash'].usd;
+    // Re-render miners now that prices are available
+    if (userMiners.length) renderMiners();
+  } catch {}
+
+  const TICKER_ITEMS = [
+    // From financial edge func
+    ...['AU','AG','CU','OIL','S&P','NDQ','EUR/USD','BTC'].map(lbl => {
+      const d = financial.find(x => x.label === lbl);
+      return { label: lbl, pct: d?.pct ?? null };
+    }),
+    // Extra crypto
+    { label: 'DOGE', pct: crypto['dogecoin']?.usd_24h_change ?? null },
+    { label: 'KAS',  pct: crypto['kaspa']?.usd_24h_change ?? null },
+    { label: 'CKB',  pct: crypto['nervos-network']?.usd_24h_change ?? null },
+  ];
+
+  function buildHTML(arr) {
+    return arr.map(item => {
+      const p = item.pct, has = p != null;
+      const cls = !has ? 'flat' : p > 0 ? 'up' : p < 0 ? 'down' : 'flat';
+      const str = has ? `${p > 0 ? '+' : ''}${p.toFixed(2)}%` : '—';
+      return `<span class="t-item"><span class="t-sym">${item.label}</span><span class="t-pct ${cls}">${str}</span></span><span class="t-dot">◆</span>`;
+    }).join('');
+  }
+
+  const html = buildHTML(TICKER_ITEMS);
+  const probe = document.createElement('span');
+  probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;pointer-events:none';
+  probe.innerHTML = html;
+  document.body.appendChild(probe);
+  const copyWidth = probe.offsetWidth || 1;
+  document.body.removeChild(probe);
+  const copies = Math.max(3, Math.ceil(window.innerWidth * 3 / copyWidth) + 1);
+  track.innerHTML = html.repeat(copies);
+
+  const speed = 55;
+  let x = 0, paused = false, last = null;
+  track.addEventListener('mouseenter', () => { paused = true; });
+  track.addEventListener('mouseleave', () => { paused = false; });
+  function step(ts) {
+    if (last !== null && !paused) {
+      x += speed * (ts - last) / 1000;
+      if (x >= copyWidth) x -= copyWidth;
+      track.style.transform = `translateX(-${x}px)`;
+    }
+    last = ts;
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ── AUTH ──
+function openAuthModal(tab) {
+  switchAuthTab(tab || 'signin');
+  document.getElementById('auth-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  generateCaptcha('si');
+  generateCaptcha('su');
+}
+function closeAuthModal() {
+  document.getElementById('auth-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function switchAuthTab(tab) {
+  document.getElementById('panel-signin').style.display = tab === 'signin' ? '' : 'none';
+  document.getElementById('panel-signup').style.display = tab === 'signup' ? '' : 'none';
+  document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
+  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+}
+
+async function submitSignIn() {
+  const btn = document.getElementById('si-btn');
+  const err = document.getElementById('si-error');
+  err.style.display = 'none';
+  const siAns = document.getElementById('si-captcha-a');
+  if (siAns.value.trim() !== siAns.dataset.answer) {
+    document.getElementById('si-captcha-err').style.display = 'block';
+    generateCaptcha('si'); return;
+  }
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  const { error } = await sb.auth.signInWithPassword({
+    email: document.getElementById('si-email').value,
+    password: document.getElementById('si-pw').value,
+  });
+  btn.disabled = false; btn.textContent = 'Sign In';
+  generateCaptcha('si');
+  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
+  closeAuthModal();
+}
+
+async function submitSignUp() {
+  const btn = document.getElementById('su-btn');
+  const err = document.getElementById('su-error');
+  err.style.display = 'none';
+  const pw1 = document.getElementById('su-pw').value;
+  const pw2 = document.getElementById('su-pw2').value;
+  if (pw1 !== pw2) { err.textContent = 'Passwords do not match.'; err.style.display = 'block'; return; }
+  if (pw1.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.style.display = 'block'; return; }
+  const suAns = document.getElementById('su-captcha-a');
+  if (suAns.value.trim() !== suAns.dataset.answer) {
+    document.getElementById('su-captcha-err').style.display = 'block';
+    generateCaptcha('su'); return;
+  }
+  btn.disabled = true; btn.textContent = 'Creating account…';
+  const { error } = await sb.auth.signUp({
+    email: document.getElementById('su-email').value,
+    password: pw1,
+    options: { emailRedirectTo: window.location.origin + window.location.pathname }
+  });
+  btn.disabled = false; btn.textContent = 'Create Account';
+  generateCaptcha('su');
+  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
+  document.getElementById('su-success').style.display = 'block';
+  document.querySelector('#panel-signup .btn-form-submit').style.display = 'none';
+}
+
+function openUserMenu() {
+  if (confirm('Sign out of Righash?')) sb.auth.signOut();
+}
+
+// ── MATH CAPTCHA ──
+function generateCaptcha(prefix) {
+  const a = Math.floor(Math.random() * 9) + 1;
+  const b = Math.floor(Math.random() * 9) + 1;
+  const q = document.getElementById(prefix + '-captcha-q');
+  const ans = document.getElementById(prefix + '-captcha-a');
+  const err = document.getElementById(prefix + '-captcha-err');
+  if (q) q.textContent = a + ' + ' + b + ' = ?';
+  if (ans) { ans.dataset.answer = String(a + b); ans.value = ''; }
+  if (err) err.style.display = 'none';
+}
+
+// ── SESSION ──
+sb.auth.getSession().then(({ data: { session } }) => {
+  if (session) onSignIn(session.user);
+});
+sb.auth.onAuthStateChange((event, session) => {
+  if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
+    onSignIn(session.user);
+  } else if (event === 'SIGNED_OUT') {
+    onSignOut();
+  }
+});
+
+function onSignIn(user) {
+  currentUser = user;
+  document.getElementById('nav-signin-btn').style.display = 'none';
+  document.getElementById('nav-signup-btn').style.display = 'none';
+  document.getElementById('nav-user-btn').style.display = '';
+  const email = user.email || '';
+  document.getElementById('nav-user-email').textContent = email.split('@')[0];
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('toolbar-add-btn').style.display = '';
+  const name = (user.user_metadata?.full_name || email.split('@')[0] || 'Miner');
+  document.getElementById('dash-user-name').textContent = name;
+  const now = new Date();
+  document.getElementById('dash-date').textContent = now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  loadMiners();
+}
+
+function onSignOut() {
+  currentUser = null;
+  document.getElementById('nav-signin-btn').style.display = '';
+  document.getElementById('nav-signup-btn').style.display = '';
+  document.getElementById('nav-user-btn').style.display = 'none';
+  document.getElementById('landing').style.display = '';
+  document.getElementById('dashboard').style.display = 'none';
+  userMiners = [];
+}
+
+// ── MINERS DB ──
+async function loadMiners() {
+  if (!currentUser) return;
+  const { data, error } = await sb.from('user_miners').select('*').eq('user_id', currentUser.id).order('created_at');
+  if (error) console.error('loadMiners error:', error.message);
+  userMiners = data || [];
+  renderMiners();
+}
+
+async function deleteMiner(id) {
+  if (!confirm('Remove this miner?')) return;
+  await sb.from('user_miners').delete().eq('id', id).eq('user_id', currentUser.id);
+  userMiners = userMiners.filter(m => m.id !== id);
+  renderMiners();
+  showToast('Miner removed', 'success');
+}
+
+async function updateElec(id, delta) {
+  const m = userMiners.find(x => x.id === id);
+  if (!m) return;
+  const rate = Math.max(0.01, Math.round((m.electricity_rate + delta) * 100) / 100);
+  await sb.from('user_miners').update({ electricity_rate: rate }).eq('id', id);
+  m.electricity_rate = rate;
+  renderMiners();
+}
+
+// ── RENDER MINERS ──
+function calcDailyEarnings(miner) {
+  const coin = miner.coin;
+  const price = coinPrices[coin] || 0;
+  const net_hr = NET_HR[coin];
+  if (!net_hr || !price) return { gross: 0, elecCost: 0, net: 0 };
+  // Use live WhatToMine value when available, else fallback
+  const perUnit = (wtmPerUnit[coin] != null) ? wtmPerUnit[coin] : net_hr.perUnit;
+  const gross = miner.hashrate * perUnit * price;
+  const elecCost = (miner.power_watts / 1000) * 24 * miner.electricity_rate;
+  return { gross, elecCost, net: gross - elecCost };
+}
+
+function renderMiners() {
+  const grid = document.getElementById('miners-grid');
+  const empty = document.getElementById('miners-empty');
+  if (!userMiners.length) {
+    grid.style.display = 'none';
+    empty.style.display = 'flex';
+    updateStats();
+    return;
+  }
+  empty.style.display = 'none';
+  grid.style.display = 'flex';
+
+  grid.innerHTML = userMiners.map(m => {
+    const coin = COINS.find(c => c.sym === m.coin) || { sym: m.coin, color: '#6B7A8D', name: m.coin };
+    const { gross, elecCost, net } = calcDailyEarnings(m);
+    const netCls = net >= 0 ? 'positive' : 'negative';
+    const hrDisplay = m.hashrate + ' ' + m.hashrate_unit;
+    return `
+    <div class="miner-card">
+      <div class="miner-coin-bar" style="background:${coin.color};"></div>
+      <div class="miner-info">
+        <div class="miner-name-wrap">
+          <span class="miner-chip" style="color:${coin.color};border-color:${coin.color}40;">${coin.sym}</span>
+          <span class="miner-name">${esc(m.miner_name)}</span>
+          <span class="miner-type-badge">${m.miner_type?.toUpperCase()}</span>
+        </div>
+        <div class="miner-meta">${esc(m.algorithm)} · ${esc(m.coin)}</div>
+      </div>
+      <div class="miner-stat">
+        <div class="miner-stat-val">${hrDisplay}</div>
+        <div class="miner-stat-lbl">Hashrate</div>
+      </div>
+      <div class="miner-stat">
+        <div class="miner-stat-val">${m.power_watts} W</div>
+        <div class="miner-stat-lbl">Power</div>
+      </div>
+      <div class="miner-elec">
+        <div class="elec-label">USD/kWh</div>
+        <div class="elec-ctrl">
+          <button class="elec-btn" onclick="updateElec('${m.id}', -0.01)">−</button>
+          <div class="elec-val">${m.electricity_rate.toFixed(2)}</div>
+          <button class="elec-btn" onclick="updateElec('${m.id}', +0.01)">+</button>
+        </div>
+      </div>
+      <div class="miner-earnings">
+        <div class="miner-earn-net ${netCls}">${net >= 0 ? '+' : ''}$${net.toFixed(2)}/day</div>
+        <div class="miner-earn-gross">Gross $${gross.toFixed(2)}</div>
+        <div class="miner-earn-gross" style="color:var(--red);">Elec $${elecCost.toFixed(2)}</div>
+      </div>
+      <div class="miner-actions">
+        <button class="btn-miner-del" onclick="deleteMiner('${m.id}')" title="Remove miner">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+function updateStats() {
+  let totalGross = 0, totalNet = 0, totalWatts = 0;
+  userMiners.forEach(m => {
+    const { gross, net } = calcDailyEarnings(m);
+    totalGross += gross;
+    totalNet += net;
+    totalWatts += m.power_watts;
+  });
+  document.getElementById('stat-daily').textContent = '$' + totalGross.toFixed(2);
+  const netEl = document.getElementById('stat-net');
+  netEl.textContent = (totalNet >= 0 ? '+' : '') + '$' + totalNet.toFixed(2);
+  netEl.style.color = totalNet >= 0 ? 'var(--accent)' : 'var(--red)';
+  document.getElementById('stat-power').textContent = totalWatts >= 1000 ? (totalWatts/1000).toFixed(2) + ' kW' : totalWatts + ' W';
+  document.getElementById('stat-count').textContent = userMiners.length;
+}
+
+// ── ADD MINER MODAL ──
+function openAddMiner() {
+  addElecRate = 0.10;
+  addSelectedCoin = null;
+  document.getElementById('add-elec-val').textContent = '0.10';
+  document.getElementById('add-error').style.display = 'none';
+  setMinerType('asic');
+  buildCoinGrid();
+  document.getElementById('add-miner-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeAddMiner() {
+  document.getElementById('add-miner-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function setMinerType(type) {
+  addMinerType = type;
+  document.getElementById('pill-asic').classList.toggle('active', type === 'asic');
+  document.getElementById('pill-gpu').classList.toggle('active', type === 'gpu');
+  const sel = document.getElementById('hw-select');
+  const hw = HARDWARE.filter(h => h.type === type);
+  sel.innerHTML = '<option value="">— Select miner —</option>' + hw.map(h => `<option value="${h.id}">${h.name}</option>`).join('');
+  document.getElementById('hw-preview').classList.remove('show');
+  addSelectedCoin = null;
+  buildCoinGrid();
+}
+
+function onHwSelect() {
+  const id = document.getElementById('hw-select').value;
+  const hw = HARDWARE.find(h => h.id === id);
+  const prev = document.getElementById('hw-preview');
+  if (!hw) { prev.classList.remove('show'); return; }
+  document.getElementById('prev-hr').textContent = hw.hr + ' ' + hw.hrUnit;
+  document.getElementById('prev-pw').textContent = hw.watts + ' W';
+  document.getElementById('prev-algo').textContent = hw.algo;
+  prev.classList.add('show');
+  // Auto-select the default coin
+  addSelectedCoin = hw.coin;
+  buildCoinGrid(hw.algo);
+}
+
+function buildCoinGrid(algo) {
+  const grid = document.getElementById('coin-grid');
+  // Filter relevant coins based on algorithm
+  const algoCoins = {
+    'SHA-256': ['BTC', 'BCH'], 'Scrypt': ['LTC', 'DOGE'],
+    'kHeavyHash': ['KAS'], 'Blake2b': ['CKB'], 'Eaglesong': ['CKB'],
+    'Etchash': ['ETC'], 'RandomX': ['XMR'],
+    'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
+    'Equihash': ['ZEC'], 'Blake3': ['ALPH'],
+  };
+  const relevant = algo && algoCoins[algo] ? algoCoins[algo] : COINS.map(c => c.sym);
+  const displayCoins = COINS.filter(c => relevant.includes(c.sym));
+  grid.innerHTML = displayCoins.map(c => `
+    <div class="coin-pill ${addSelectedCoin === c.sym ? 'active' : ''}" onclick="selectCoin('${c.sym}')" style="${addSelectedCoin === c.sym ? 'border-color:'+c.color+';' : ''}">
+      <div class="coin-pill-sym" style="color:${c.color};">${c.sym}</div>
+      <div class="coin-pill-name">${c.name}</div>
+    </div>`).join('');
+}
+
+function selectCoin(sym) {
+  addSelectedCoin = sym;
+  buildCoinGrid(document.getElementById('hw-select').value ? HARDWARE.find(h => h.id === document.getElementById('hw-select').value)?.algo : null);
+}
+
+function adjAddElec(delta) {
+  addElecRate = Math.max(0.01, Math.round((addElecRate + delta) * 100) / 100);
+  document.getElementById('add-elec-val').textContent = addElecRate.toFixed(2);
+}
+
+async function submitAddMiner() {
+  const err = document.getElementById('add-error');
+  err.style.display = 'none';
+  const hwId = document.getElementById('hw-select').value;
+  if (!hwId) { err.textContent = 'Please select a miner.'; err.style.display = 'block'; return; }
+  if (!addSelectedCoin) { err.textContent = 'Please select the coin being mined.'; err.style.display = 'block'; return; }
+  const hw = HARDWARE.find(h => h.id === hwId);
+  if (!hw) return;
+
+  const { data, error } = await sb.from('user_miners').insert({
+    user_id:         currentUser.id,
+    miner_key:       hw.id,
+    miner_name:      hw.name,
+    miner_type:      hw.type,
+    algorithm:       hw.algo,
+    hashrate:        hw.hr,
+    hashrate_unit:   hw.hrUnit,
+    power_watts:     hw.watts,
+    coin:            addSelectedCoin,
+    electricity_rate: addElecRate,
+  }).select().single();
+
+  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
+  userMiners.push(data);
+  renderMiners();
+  closeAddMiner();
+  showToast('Miner added!', 'success');
+}
+
+// ── HELPERS ──
+function esc(str) {
+  if (str == null) return '';
+  const d = document.createElement('div');
+  d.textContent = String(str);
+  return d.innerHTML;
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => { t.className = 'toast'; }, 2800);
+}
+
+// ── INIT ──
+initTicker();
+// Fetch live WhatToMine profitability data, refresh every 5 min
+fetchWtmProfitability();
+setInterval(fetchWtmProfitability, 5 * 60 * 1000);
+// Refresh prices every 60s
+setInterval(async () => {
+  try {
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,dogecoin,kaspa,nervos-network,monero,ravencoin,ergo,zcash&vs_currencies=usd');
+    if (!r.ok) return;
+    const d = await r.json();
+    const map = { bitcoin:'BTC', ethereum:'ETH', dogecoin:'DOGE', kaspa:'KAS', 'nervos-network':'CKB', monero:'XMR', ravencoin:'RVN', ergo:'ERGO', zcash:'ZEC' };
+    Object.entries(map).forEach(([cg, sym]) => { if (d[cg]) coinPrices[sym] = d[cg].usd; });
+    if (userMiners.length) renderMiners();
+  } catch {}
+}, 60000);
+</script>
+</body>
+</html>

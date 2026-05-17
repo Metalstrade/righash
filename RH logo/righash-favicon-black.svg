@@ -1,0 +1,10 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <title>Righash favicon</title>
+  <g transform="translate(32, 32)">
+    <rect x="-22" y="-22" width="44" height="44" rx="6" fill="none" stroke="#000000" stroke-width="4"/>
+    <line x1="-8" y1="-22" x2="-8" y2="22" stroke="#000000" stroke-width="4" stroke-linecap="round"/>
+    <line x1="8" y1="-22" x2="8" y2="22" stroke="#000000" stroke-width="4" stroke-linecap="round"/>
+    <line x1="-22" y1="-8" x2="22" y2="-8" stroke="#000000" stroke-width="4" stroke-linecap="round"/>
+    <line x1="-22" y1="8" x2="22" y2="8" stroke="#000000" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>
