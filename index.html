@@ -1303,6 +1303,10 @@ const HARDWARE = [
   { id:'z9',        name:'Antminer Z9',             type:'asic', algo:'Equihash',   coin:'ZEC', hr:42,   hrUnit:'KH/s', watts:970,  release:'Jun 2018' },
   { id:'z9mini',    name:'Antminer Z9 Mini',        type:'asic', algo:'Equihash',   coin:'ZEC', hr:10,   hrUnit:'KH/s', watts:300,  release:'Jun 2018' },
 
+  // XTM — SHA3x
+  { id:'xt-box',    name:'Goldshell XT-BOX',           type:'asic', algo:'SHA3x', coin:'XTM', hr:580, hrUnit:'GH/s', watts:400, release:'Oct 2025' },
+  { id:'xt-card',   name:'Goldshell XT Card',           type:'asic', algo:'SHA3x', coin:'XTM', hr:100, hrUnit:'GH/s', watts:65,  release:'Nov 2025' },
+
   // SUMO — CryptoNightR
   { id:'st-box',    name:'Goldshell ST-BOX',           type:'asic', algo:'CryptoNightR', coin:'SUMO', hr:13.92, hrUnit:'KH/s', watts:61, release:'Aug 2021' },
 
@@ -1422,6 +1426,7 @@ const COINS = [
   { sym:'SCC',  name:'Stakecube',      color:'#1A9EC9', cgId:'stakecube' },
   { sym:'SCP',  name:'ScPrime',        color:'#1D7EB5', cgId:'scprime' },
   { sym:'SUMO', name:'Sumokoin',       color:'#1DB9C3', cgId:'sumokoin' },
+  { sym:'XTM',  name:'Tari (MinoTari)',color:'#FF6B35', cgId:'minotari' },
 ];
 
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
@@ -1454,6 +1459,7 @@ const NET_HR = {
   'SCC':  { perUnit: 0.001,  unit: 'TH/s' },
   'SCP':  { perUnit: 0.0005, unit: 'TH/s' },
   'SUMO': { perUnit: 0.05,   unit: 'KH/s' },
+  'XTM':  { perUnit: 0.001,  unit: 'GH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1868,6 +1874,7 @@ const ALGO_COINS = {
   'X11': ['DASH'], 'Blake256R14': ['DCR', 'SCP'], 'Cuckatoo32': ['GRIN'], 'Groestl': ['GRS'],
   'Blake2b-HNS': ['HNS'], 'VersaHash': ['INI'], 'Lyra2REv2': ['MONA'], 'NexaPow': ['NEXA'],
   'SHA512256d': ['RXD'], 'Blake2b-Sia': ['SC'], 'Blake2B': ['SCC'], 'CryptoNightR': ['SUMO'],
+  'SHA3x': ['XTM'],
 };
 // Reverse map: coin symbol → primary algorithm label for display
 const COIN_ALGO = {};
