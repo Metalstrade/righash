@@ -1303,6 +1303,9 @@ const HARDWARE = [
   { id:'z9',        name:'Antminer Z9',             type:'asic', algo:'Equihash',   coin:'ZEC', hr:42,   hrUnit:'KH/s', watts:970,  release:'Jun 2018' },
   { id:'z9mini',    name:'Antminer Z9 Mini',        type:'asic', algo:'Equihash',   coin:'ZEC', hr:10,   hrUnit:'KH/s', watts:300,  release:'Jun 2018' },
 
+  // SUMO — CryptoNightR
+  { id:'st-box',    name:'Goldshell ST-BOX',           type:'asic', algo:'CryptoNightR', coin:'SUMO', hr:13.92, hrUnit:'KH/s', watts:61, release:'Aug 2021' },
+
   // SCP — Blake256R14
   { id:'ant-dr7',   name:'Antminer DR7',               type:'asic', algo:'Blake256R14', coin:'SCP', hr:127, hrUnit:'TH/s', watts:2730, release:'Jun 2024' },
 
@@ -1418,6 +1421,7 @@ const COINS = [
   { sym:'RXD',  name:'Radiant',        color:'#1E90FF', cgId:'radiant' },
   { sym:'SCC',  name:'Stakecube',      color:'#1A9EC9', cgId:'stakecube' },
   { sym:'SCP',  name:'ScPrime',        color:'#1D7EB5', cgId:'scprime' },
+  { sym:'SUMO', name:'Sumokoin',       color:'#1DB9C3', cgId:'sumokoin' },
 ];
 
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
@@ -1449,6 +1453,7 @@ const NET_HR = {
   'SC':   { perUnit: 0.001,  unit: 'TH/s' },
   'SCC':  { perUnit: 0.001,  unit: 'TH/s' },
   'SCP':  { perUnit: 0.0005, unit: 'TH/s' },
+  'SUMO': { perUnit: 0.05,   unit: 'KH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1862,7 +1867,7 @@ const ALGO_COINS = {
   'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
   'X11': ['DASH'], 'Blake256R14': ['DCR', 'SCP'], 'Cuckatoo32': ['GRIN'], 'Groestl': ['GRS'],
   'Blake2b-HNS': ['HNS'], 'VersaHash': ['INI'], 'Lyra2REv2': ['MONA'], 'NexaPow': ['NEXA'],
-  'SHA512256d': ['RXD'], 'Blake2b-Sia': ['SC'], 'Blake2B': ['SCC'],
+  'SHA512256d': ['RXD'], 'Blake2b-Sia': ['SC'], 'Blake2B': ['SCC'], 'CryptoNightR': ['SUMO'],
 };
 // Reverse map: coin symbol → primary algorithm label for display
 const COIN_ALGO = {};
