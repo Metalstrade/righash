@@ -1293,14 +1293,14 @@ const HARDWARE = [
   { id:'bk-mini',   name:'Baikal Mini Miner',              type:'asic', algo:'X11', coin:'DASH', hr:0.15, hrUnit:'GH/s', watts:50,   release:'Sep 2016' },
 
   // ZEC — Equihash
-  { id:'z15pro',    name:'Antminer Z15 Pro',        type:'asic', algo:'Equihash',   coin:'ZEC', hr:840,  hrUnit:'KH/s', watts:2780, release:'May 2022' },
+  { id:'z15pro',    name:'Antminer Z15 Pro',        type:'asic', algo:'Equihash',   coin:'ZEC', hr:840,  hrUnit:'KH/s', watts:2780, release:'Jun 2023' },
   { id:'z15j',      name:'Antminer Z15J',           type:'asic', algo:'Equihash',   coin:'ZEC', hr:580,  hrUnit:'KH/s', watts:1500, release:'Nov 2021' },
-  { id:'z15',       name:'Antminer Z15',            type:'asic', algo:'Equihash',   coin:'ZEC', hr:420,  hrUnit:'KH/s', watts:1510, release:'Jul 2019' },
-  { id:'a9pp',      name:'Innosilicon A9++ ZMaster',type:'asic', algo:'Equihash',   coin:'ZEC', hr:140,  hrUnit:'KH/s', watts:1550, release:'Jan 2020' },
-  { id:'a9p',       name:'Innosilicon A9+ ZMaster', type:'asic', algo:'Equihash',   coin:'ZEC', hr:120,  hrUnit:'KH/s', watts:1550, release:'Feb 2019' },
+  { id:'z15',       name:'Antminer Z15',            type:'asic', algo:'Equihash',   coin:'ZEC', hr:420,  hrUnit:'KH/s', watts:1510, release:'Jun 2020' },
+  { id:'a9pp',      name:'Innosilicon A9++ ZMaster',type:'asic', algo:'Equihash',   coin:'ZEC', hr:140,  hrUnit:'KH/s', watts:1550, release:'May 2019' },
+  { id:'a9p',       name:'Innosilicon A9+ ZMaster', type:'asic', algo:'Equihash',   coin:'ZEC', hr:120,  hrUnit:'KH/s', watts:1550, release:'Jan 2019' },
   { id:'z11',       name:'Antminer Z11',            type:'asic', algo:'Equihash',   coin:'ZEC', hr:135,  hrUnit:'KH/s', watts:1418, release:'Apr 2019' },
-  { id:'a9',        name:'Innosilicon A9 ZMaster',  type:'asic', algo:'Equihash',   coin:'ZEC', hr:50,   hrUnit:'KH/s', watts:620,  release:'Jan 2018' },
-  { id:'z9',        name:'Antminer Z9',             type:'asic', algo:'Equihash',   coin:'ZEC', hr:42,   hrUnit:'KH/s', watts:970,  release:'Jun 2018' },
+  { id:'a9',        name:'Innosilicon A9 ZMaster',  type:'asic', algo:'Equihash',   coin:'ZEC', hr:50,   hrUnit:'KH/s', watts:620,  release:'Jun 2018' },
+  { id:'z9',        name:'Antminer Z9',             type:'asic', algo:'Equihash',   coin:'ZEC', hr:42,   hrUnit:'KH/s', watts:970,  release:'Sep 2018' },
   { id:'z9mini',    name:'Antminer Z9 Mini',        type:'asic', algo:'Equihash',   coin:'ZEC', hr:10,   hrUnit:'KH/s', watts:300,  release:'Jun 2018' },
 
   // XTM — SHA3x
@@ -1405,6 +1405,7 @@ const COINS = [
   { sym:'RVN',  name:'Ravencoin',      color:'#384182', cgId:'ravencoin' },
   { sym:'ERGO', name:'Ergo',           color:'#FF5052', cgId:'ergo' },
   { sym:'ZEC',  name:'Zcash',          color:'#F4B728', cgId:'zcash' },
+  { sym:'ZEN',  name:'Horizen',        color:'#041742', cgId:'horizen' },
   { sym:'DASH', name:'Dash',           color:'#008CE7', cgId:'dash' },
   { sym:'BCH',  name:'Bitcoin Cash',   color:'#8DC351', cgId:'bitcoin-cash' },
   { sym:'ALPH', name:'Alephium',       color:'#FF4B1F', cgId:'alephium' },
@@ -1442,6 +1443,7 @@ const NET_HR = {
   'RVN':  { perUnit: 0.144,   unit: 'MH/s' },
   'ERGO': { perUnit: 3.6e-4,  unit: 'MH/s' },
   'ZEC':  { perUnit: 9.8e-5,  unit: 'KSol/s' },
+  'ZEN':  { perUnit: 9.8e-5,  unit: 'KSol/s' },
   'KDA':  { perUnit: 7.2,    unit: 'TH/s' },
   'ALEO': { perUnit: 0.8,   unit: 'MH/s' },
   'ALPH': { perUnit: 0.001, unit: 'GH/s' },
@@ -1870,7 +1872,7 @@ const ALGO_COINS = {
   'kHeavyHash': ['KAS'], 'Blake2b': ['CKB'], 'Eaglesong': ['CKB'],
   'Etchash': ['ETC'], 'RandomX': ['XMR'],
   'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
-  'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
+  'Equihash': ['ZEC', 'ZEN'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
   'X11': ['DASH'], 'Blake256R14': ['DCR', 'SCP'], 'Cuckatoo32': ['GRIN'], 'Groestl': ['GRS'],
   'Blake2b-HNS': ['HNS'], 'VersaHash': ['INI'], 'Lyra2REv2': ['MONA'], 'NexaPow': ['NEXA'],
   'SHA512256d': ['RXD'], 'Blake2b-Sia': ['SC'], 'Blake2B': ['SCC'], 'CryptoNightR': ['SUMO'],
@@ -1882,6 +1884,7 @@ for (const [algo, coins] of Object.entries(ALGO_COINS)) {
   for (const sym of coins) { if (!COIN_ALGO[sym]) COIN_ALGO[sym] = algo; }
 }
 COIN_ALGO['LTC/DOGE'] = 'Scrypt';
+COIN_ALGO['ZEC+ZEN'] = 'Equihash';
 
 function setMinerType(type) {
   addMinerType = type;
@@ -1915,8 +1918,9 @@ function buildHwList() {
   const selectedId = document.getElementById('hw-select').value;
 
   let hw = HARDWARE.filter(h => h.type === addMinerType);
-  // LTC/DOGE combined filter
+  // LTC/DOGE and ZEC+ZEN combined filters
   if (addSelectedCoin === 'LTC/DOGE') hw = hw.filter(h => h.coin === 'LTC' || h.coin === 'DOGE');
+  else if (addSelectedCoin === 'ZEC+ZEN') hw = hw.filter(h => h.coin === 'ZEC' || h.coin === 'ZEN');
   else if (addSelectedCoin) hw = hw.filter(h => h.coin === addSelectedCoin);
   // Search query filter
   if (query) hw = hw.filter(h => h.name.toLowerCase().includes(query));
@@ -1952,13 +1956,13 @@ function onHwSelect(id) {
   document.getElementById('prev-release').textContent = hw.release || '—';
   prev.classList.add('show');
   // Auto-select coin group
-  addSelectedCoin = (hw.coin === 'LTC' || hw.coin === 'DOGE') ? 'LTC/DOGE' : hw.coin;
+  addSelectedCoin = (hw.coin === 'LTC' || hw.coin === 'DOGE') ? 'LTC/DOGE' : (hw.coin === 'ZEC' || hw.coin === 'ZEN') ? 'ZEC+ZEN' : hw.coin;
   buildCoinGrid(hw.algo);
 }
 
 function buildCoinGrid(algo) {
   const grid = document.getElementById('coin-grid');
-  // Build display list — merge LTC+DOGE into one pill
+  // Build display list — merge LTC+DOGE and ZEC+ZEN into combined pills
   const relevant = algo && ALGO_COINS[algo] ? ALGO_COINS[algo] : null;
   let displayItems = [];
   const seen = new Set();
@@ -1969,13 +1973,19 @@ function buildCoinGrid(algo) {
         seen.add('LTC/DOGE');
         displayItems.push({ sym:'LTC/DOGE', name:'Litecoin / Dogecoin', color:'#C2A633' });
       }
+    } else if (c.sym === 'ZEC' || c.sym === 'ZEN') {
+      if (!seen.has('ZEC+ZEN')) {
+        seen.add('ZEC+ZEN');
+        displayItems.push({ sym:'ZEC+ZEN', name:'Zcash / Horizen', color:'#F4B728' });
+      }
     } else {
       displayItems.push(c);
     }
   }
   const isLtcDoge = addSelectedCoin === 'LTC/DOGE';
+  const isZecZen = addSelectedCoin === 'ZEC+ZEN';
   grid.innerHTML = displayItems.map(c => {
-    const active = addSelectedCoin === c.sym || (c.sym === 'LTC/DOGE' && isLtcDoge);
+    const active = addSelectedCoin === c.sym || (c.sym === 'LTC/DOGE' && isLtcDoge) || (c.sym === 'ZEC+ZEN' && isZecZen);
     const algoLabel = COIN_ALGO[c.sym] || '';
     return `<div class="coin-pill ${active ? 'active' : ''}" onmousedown="_hwCloseTimer && clearTimeout(_hwCloseTimer)" onclick="selectCoin('${c.sym}')" style="${active ? 'border-color:'+c.color+';' : ''}">
       <div class="coin-pill-sym" style="color:${c.color};">${c.sym}</div>
@@ -1992,7 +2002,7 @@ function selectCoin(sym) {
   const selectedHwId = document.getElementById('hw-select').value;
   const currentHw = HARDWARE.find(h => h.id === selectedHwId);
   // Clear hardware if it doesn't match selected coin group
-  const hwCoinGroup = currentHw ? ((currentHw.coin === 'LTC' || currentHw.coin === 'DOGE') ? 'LTC/DOGE' : currentHw.coin) : null;
+  const hwCoinGroup = currentHw ? ((currentHw.coin === 'LTC' || currentHw.coin === 'DOGE') ? 'LTC/DOGE' : (currentHw.coin === 'ZEC' || currentHw.coin === 'ZEN') ? 'ZEC+ZEN' : currentHw.coin) : null;
   if (currentHw && hwCoinGroup !== sym) {
     document.getElementById('hw-select').value = '';
     document.getElementById('hw-search').value = '';
@@ -2027,8 +2037,8 @@ async function submitAddMiner() {
   if (!addSelectedCoin) { err.textContent = 'Please select the coin being mined.'; err.style.display = 'block'; return; }
   const hw = HARDWARE.find(h => h.id === hwId);
   if (!hw) return;
-  // LTC/DOGE group → use hardware's native coin
-  const coinToStore = addSelectedCoin === 'LTC/DOGE' ? hw.coin : addSelectedCoin;
+  // Combined groups → use hardware's native coin
+  const coinToStore = (addSelectedCoin === 'LTC/DOGE' || addSelectedCoin === 'ZEC+ZEN') ? hw.coin : addSelectedCoin;
 
   const { data, error } = await sb.from('user_miners').insert({
     user_id:         currentUser.id,
