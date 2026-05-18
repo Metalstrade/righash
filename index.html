@@ -1504,7 +1504,7 @@ async function fetchNhProfitability() {
       try {
         const speeds = typeof d.speeds === 'string' ? JSON.parse(d.speeds) : d.speeds;
         const gh = (speeds['SCRYPT'] || 0) / 1e9;
-        if (gh > 0) { totalPaying += p; totalGH += gh; }
+        if (gh >= 1) { totalPaying += p; totalGH += gh; } // only modern ASICs (>=1 GH/s)
       } catch {}
     }
     if (totalGH > 0) {
