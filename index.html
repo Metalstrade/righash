@@ -1322,6 +1322,10 @@ const HARDWARE = [
   { id:'bk-d',      name:'Baikal BK-D',                type:'asic', algo:'Blake256R14', coin:'DCR', hr:0.32, hrUnit:'TH/s', watts:1100, release:'Jun 2018' },
   { id:'d18',       name:'FFMiner Decred D18',         type:'asic', algo:'Blake256R14', coin:'DCR', hr:0.34, hrUnit:'TH/s', watts:180,  release:'Jun 2018' },
   { id:'bk-b',      name:'Baikal BK-B',                type:'asic', algo:'Blake256R14', coin:'DCR', hr:0.16, hrUnit:'TH/s', watts:410,  release:'Jan 2018' },
+
+  // GRIN — Cuckatoo32
+  { id:'ipollo-g1',     name:'iPollo G1',               type:'asic', algo:'Cuckatoo32', coin:'GRIN', hr:36,  hrUnit:'GPS', watts:2800, release:'Dec 2020' },
+  { id:'ipollo-g1mini', name:'iPollo G1 Mini',           type:'asic', algo:'Cuckatoo32', coin:'GRIN', hr:1.2, hrUnit:'GPS', watts:120,  release:'Jan 2021' },
 ];
 
 // ── COIN DATA ──
@@ -1348,6 +1352,7 @@ const COINS = [
   { sym:'ALEO', name:'Aleo',           color:'#5F6FFF', cgId:'aleo' },
   { sym:'BCN',  name:'Bytecoin',       color:'#FF1A8C', cgId:'bytecoin' },
   { sym:'DCR',  name:'Decred',         color:'#2ED6A1', cgId:'decred' },
+  { sym:'GRIN', name:'Grin',           color:'#FFD700', cgId:'grin' },
 ];
 
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
@@ -1369,6 +1374,7 @@ const NET_HR = {
   'BCN':  { perUnit: 2000,  unit: 'KH/s' },
   'DASH': { perUnit: 0.0001, unit: 'GH/s' },
   'DCR':  { perUnit: 0.0005, unit: 'TH/s' },
+  'GRIN': { perUnit: 0.002,  unit: 'GPS' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1780,7 +1786,7 @@ const ALGO_COINS = {
   'Etchash': ['ETC'], 'RandomX': ['XMR'],
   'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
   'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
-  'X11': ['DASH'], 'Blake256R14': ['DCR'],
+  'X11': ['DASH'], 'Blake256R14': ['DCR'], 'Cuckatoo32': ['GRIN'],
 };
 // Reverse map: coin symbol → primary algorithm label for display
 const COIN_ALGO = {};
