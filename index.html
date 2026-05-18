@@ -1303,6 +1303,9 @@ const HARDWARE = [
   { id:'z9',        name:'Antminer Z9',             type:'asic', algo:'Equihash',   coin:'ZEC', hr:42,   hrUnit:'KH/s', watts:970,  release:'Jun 2018' },
   { id:'z9mini',    name:'Antminer Z9 Mini',        type:'asic', algo:'Equihash',   coin:'ZEC', hr:10,   hrUnit:'KH/s', watts:300,  release:'Jun 2018' },
 
+  // SCP — Blake256R14
+  { id:'ant-dr7',   name:'Antminer DR7',               type:'asic', algo:'Blake256R14', coin:'SCP', hr:127, hrUnit:'TH/s', watts:2730, release:'Jun 2024' },
+
   // DCR — Blake256R14
   { id:'stu-u1pp',  name:'StrongU STU-U1++',         type:'asic', algo:'Blake256R14', coin:'DCR', hr:52,   hrUnit:'TH/s', watts:2200, release:'Jul 2019' },
   { id:'wtm-d1',    name:'MicroBT Whatsminer D1',     type:'asic', algo:'Blake256R14', coin:'DCR', hr:48,   hrUnit:'TH/s', watts:2200, release:'Nov 2018' },
@@ -1414,6 +1417,7 @@ const COINS = [
   { sym:'NEXA', name:'Nexa',           color:'#F0B429', cgId:'nexa' },
   { sym:'RXD',  name:'Radiant',        color:'#1E90FF', cgId:'radiant' },
   { sym:'SCC',  name:'Stakecube',      color:'#1A9EC9', cgId:'stakecube' },
+  { sym:'SCP',  name:'ScPrime',        color:'#1D7EB5', cgId:'scprime' },
 ];
 
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
@@ -1444,6 +1448,7 @@ const NET_HR = {
   'RXD':  { perUnit: 0.0001, unit: 'GH/s' },
   'SC':   { perUnit: 0.001,  unit: 'TH/s' },
   'SCC':  { perUnit: 0.001,  unit: 'TH/s' },
+  'SCP':  { perUnit: 0.0005, unit: 'TH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1855,7 +1860,7 @@ const ALGO_COINS = {
   'Etchash': ['ETC'], 'RandomX': ['XMR'],
   'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
   'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
-  'X11': ['DASH'], 'Blake256R14': ['DCR'], 'Cuckatoo32': ['GRIN'], 'Groestl': ['GRS'],
+  'X11': ['DASH'], 'Blake256R14': ['DCR', 'SCP'], 'Cuckatoo32': ['GRIN'], 'Groestl': ['GRS'],
   'Blake2b-HNS': ['HNS'], 'VersaHash': ['INI'], 'Lyra2REv2': ['MONA'], 'NexaPow': ['NEXA'],
   'SHA512256d': ['RXD'], 'Blake2b-Sia': ['SC'], 'Blake2B': ['SCC'],
 };
