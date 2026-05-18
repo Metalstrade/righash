@@ -1354,6 +1354,16 @@ const HARDWARE = [
   { id:'sc-box2',   name:'Goldshell SC-BOX 2',         type:'asic', algo:'Blake2b-Sia', coin:'SC', hr:1.9,  hrUnit:'TH/s', watts:400,  release:'Mar 2023' },
   { id:'sc-box',    name:'Goldshell SC-BOX',           type:'asic', algo:'Blake2b-Sia', coin:'SC', hr:0.9,  hrUnit:'TH/s', watts:200,  release:'Apr 2022' },
 
+  // SCC — Blake2B
+  { id:'stu-u2',    name:'StrongU STU-U2',             type:'asic', algo:'Blake2B', coin:'SCC', hr:7,     hrUnit:'TH/s', watts:1600, release:'Oct 2018' },
+  { id:'s11-sia',   name:'Innosilicon S11 SiaMaster',  type:'asic', algo:'Blake2B', coin:'SCC', hr:4.3,   hrUnit:'TH/s', watts:1350, release:'Apr 2018' },
+  { id:'b52',       name:'DragonMint B52',             type:'asic', algo:'Blake2B', coin:'SCC', hr:3.83,  hrUnit:'TH/s', watts:1380, release:'Apr 2018' },
+  { id:'sc1-imm',   name:'Obelisk SC1 Imm.',           type:'asic', algo:'Blake2B', coin:'SCC', hr:2.2,   hrUnit:'TH/s', watts:1600, release:'Mar 2019' },
+  { id:'sc1-dual',  name:'Obelisk SC1 Dual',           type:'asic', algo:'Blake2B', coin:'SCC', hr:1.1,   hrUnit:'TH/s', watts:900,  release:'Mar 2019' },
+  { id:'a3',        name:'Antminer A3',                type:'asic', algo:'Blake2B', coin:'SCC', hr:0.815, hrUnit:'TH/s', watts:1275, release:'Jan 2018' },
+  { id:'sc1-slim',  name:'Obelisk SC1 Slim',           type:'asic', algo:'Blake2B', coin:'SCC', hr:0.55,  hrUnit:'TH/s', watts:450,  release:'Jan 2019' },
+  { id:'sc1',       name:'Obelisk SC1',                type:'asic', algo:'Blake2B', coin:'SCC', hr:0.55,  hrUnit:'TH/s', watts:500,  release:'Jun 2018' },
+
   // RXD — SHA512256d
   { id:'a11-rxd',   name:'DragonBall Miner A11',     type:'asic', algo:'SHA512256d', coin:'RXD', hr:3200, hrUnit:'GH/s', watts:2300, release:'Sep 2024' },
   { id:'rxo',       name:'IceRiver RXO',              type:'asic', algo:'SHA512256d', coin:'RXD', hr:260,  hrUnit:'GH/s', watts:100,  release:'Sep 2024' },
@@ -1403,6 +1413,7 @@ const COINS = [
   { sym:'MONA', name:'MonaCoin',       color:'#D4A017', cgId:'monacoin' },
   { sym:'NEXA', name:'Nexa',           color:'#F0B429', cgId:'nexa' },
   { sym:'RXD',  name:'Radiant',        color:'#1E90FF', cgId:'radiant' },
+  { sym:'SCC',  name:'Stakecube',      color:'#1A9EC9', cgId:'stakecube' },
 ];
 
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
@@ -1432,6 +1443,7 @@ const NET_HR = {
   'NEXA': { perUnit: 0.001,  unit: 'GH/s' },
   'RXD':  { perUnit: 0.0001, unit: 'GH/s' },
   'SC':   { perUnit: 0.001,  unit: 'TH/s' },
+  'SCC':  { perUnit: 0.001,  unit: 'TH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1845,7 +1857,7 @@ const ALGO_COINS = {
   'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
   'X11': ['DASH'], 'Blake256R14': ['DCR'], 'Cuckatoo32': ['GRIN'], 'Groestl': ['GRS'],
   'Blake2b-HNS': ['HNS'], 'VersaHash': ['INI'], 'Lyra2REv2': ['MONA'], 'NexaPow': ['NEXA'],
-  'SHA512256d': ['RXD'], 'Blake2b-Sia': ['SC'],
+  'SHA512256d': ['RXD'], 'Blake2b-Sia': ['SC'], 'Blake2B': ['SCC'],
 };
 // Reverse map: coin symbol → primary algorithm label for display
 const COIN_ALGO = {};
