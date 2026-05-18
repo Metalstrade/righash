@@ -761,9 +761,9 @@ footer {
     <div class="form-field" style="margin-top:16px;">
       <label class="form-label">Electricity Rate (USD/kWh)</label>
       <div class="elec-ctrl">
-        <button class="elec-btn" onclick="adjAddElec(-0.005)">−</button>
+        <button class="elec-btn" onclick="adjAddElec(-0.001)">−</button>
         <div class="elec-val" id="add-elec-val">0.100</div>
-        <button class="elec-btn" onclick="adjAddElec(+0.005)">+</button>
+        <button class="elec-btn" onclick="adjAddElec(+0.001)">+</button>
         <span style="font-size:11px;color:var(--muted);margin-left:8px;">default 0.10 USD/kWh</span>
       </div>
     </div>
@@ -1264,7 +1264,7 @@ async function deleteMiner(id) {
 async function updateElec(id, delta) {
   const m = userMiners.find(x => x.id === id);
   if (!m) return;
-  const rate = Math.max(0.005, Math.round((m.electricity_rate + delta) * 1000) / 1000);
+  const rate = Math.max(0.001, Math.round((m.electricity_rate + delta) * 1000) / 1000);
   await sb.from('user_miners').update({ electricity_rate: rate }).eq('id', id);
   m.electricity_rate = rate;
   renderMiners();
@@ -1322,9 +1322,9 @@ function renderMiners() {
       <div class="miner-elec">
         <div class="elec-label">USD/kWh</div>
         <div class="elec-ctrl">
-          <button class="elec-btn" onclick="updateElec('${m.id}', -0.005)">−</button>
+          <button class="elec-btn" onclick="updateElec('${m.id}', -0.001)">−</button>
           <div class="elec-val">${m.electricity_rate.toFixed(3)}</div>
-          <button class="elec-btn" onclick="updateElec('${m.id}', +0.005)">+</button>
+          <button class="elec-btn" onclick="updateElec('${m.id}', +0.001)">+</button>
         </div>
       </div>
       <div class="miner-earnings">
@@ -1509,7 +1509,7 @@ function resetCoin() {
 }
 
 function adjAddElec(delta) {
-  addElecRate = Math.max(0.005, Math.round((addElecRate + delta) * 1000) / 1000);
+  addElecRate = Math.max(0.001, Math.round((addElecRate + delta) * 1000) / 1000);
   document.getElementById('add-elec-val').textContent = addElecRate.toFixed(3);
 }
 
