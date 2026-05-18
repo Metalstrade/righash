@@ -375,6 +375,15 @@ nav {
   .miner-card { grid-template-columns: auto 1fr; grid-template-rows: auto auto auto auto; }
   .miner-stat, .miner-qty, .miner-elec, .miner-earnings { border-left: none; border-top: 1px solid var(--border); }
   .miner-actions { border-left: none; border-top: 1px solid var(--border); }
+  .miner-info { padding: 10px 8px; }
+  .miners-section { padding: 8px 12px 40px; }
+}
+
+@media (max-width: 480px) {
+  nav { padding: 0 12px; gap: 8px; }
+  .nav-logo-sub { display: none; }
+  .btn-nav-outline { padding: 7px 12px; font-size: 11px; }
+  .btn-nav-accent  { padding: 7px 12px; font-size: 11px; }
 }
 
 /* ── AUTH MODAL ── */
