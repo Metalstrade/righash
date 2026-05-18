@@ -1365,6 +1365,7 @@ function openAddMiner() {
   document.getElementById('add-elec-val').textContent = '0.100';
   document.getElementById('add-error').style.display = 'none';
   document.getElementById('hw-search').value = '';
+  document.getElementById('hw-list').classList.remove('open');
   setMinerType('asic');
   buildCoinGrid();
   buildHwList();
@@ -1391,6 +1392,7 @@ function setMinerType(type) {
   document.getElementById('hw-select').value = '';
   document.getElementById('hw-search').value = '';
   document.getElementById('hw-preview').classList.remove('show');
+  document.getElementById('hw-list').classList.remove('open');
   addSelectedCoin = null;
   buildCoinGrid();
   buildHwList();
@@ -1506,6 +1508,7 @@ function resetCoin() {
   const currentHw = HARDWARE.find(h => h.id === selectedHwId);
   buildCoinGrid(currentHw?.algo || null);
   buildHwList();
+  document.getElementById('hw-list').classList.remove('open');
 }
 
 function adjAddElec(delta) {
