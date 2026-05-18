@@ -1497,17 +1497,18 @@ async function fetchNhProfitability() {
     }
     if (!r?.ok) return;
     const devices = await r.json();
-    const rates = [];
+    let totalPaying = 0, totalGH = 0;
     for (const d of devices) {
-      if (!d.paying || !d.speeds) continue;
+      const p = parseFloat(d.paying);
+      if (!p || !d.speeds) continue;
       try {
         const speeds = typeof d.speeds === 'string' ? JSON.parse(d.speeds) : d.speeds;
-        const hashH = speeds['SCRYPT'];
-        if (hashH > 0) rates.push(parseFloat(d.paying) / (hashH / 1e9)); // BTC per GH per day
+        const gh = (speeds['SCRYPT'] || 0) / 1e9;
+        if (gh > 0) { totalPaying += p; totalGH += gh; }
       } catch {}
     }
-    if (rates.length > 0) {
-      nhScryptPerGH = rates.reduce((a, b) => a + b, 0) / rates.length;
+    if (totalGH > 0) {
+      nhScryptPerGH = totalPaying / totalGH; // weighted BTC per GH per day
       if (userMiners.length) renderMiners();
     }
   } catch (e) {
