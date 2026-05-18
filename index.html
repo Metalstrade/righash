@@ -1342,6 +1342,10 @@ const HARDWARE = [
   { id:'zig-z1p',   name:'Dayun Zig Z1+',              type:'asic', algo:'Lyra2REv2', coin:'MONA', hr:7.25,  hrUnit:'GH/s', watts:1200, release:'Oct 2018' },
   { id:'zig-z1',    name:'Dayun Zig Z1',               type:'asic', algo:'Lyra2REv2', coin:'MONA', hr:6.8,   hrUnit:'GH/s', watts:1200, release:'Sep 2018' },
 
+  // RXD — SHA512256d
+  { id:'a11-rxd',   name:'DragonBall Miner A11',     type:'asic', algo:'SHA512256d', coin:'RXD', hr:3200, hrUnit:'GH/s', watts:2300, release:'Sep 2024' },
+  { id:'rxo',       name:'IceRiver RXO',              type:'asic', algo:'SHA512256d', coin:'RXD', hr:260,  hrUnit:'GH/s', watts:100,  release:'Sep 2024' },
+
   // NEXA — NexaPow
   { id:'a21',        name:'DragonBall Miner A21',      type:'asic', algo:'NexaPow', coin:'NEXA', hr:3.4, hrUnit:'GH/s', watts:1800, release:'Jan 2025' },
 
@@ -1386,6 +1390,7 @@ const COINS = [
   { sym:'INI',  name:'Initverse',      color:'#7C3AED', cgId:'initverse' },
   { sym:'MONA', name:'MonaCoin',       color:'#D4A017', cgId:'monacoin' },
   { sym:'NEXA', name:'Nexa',           color:'#F0B429', cgId:'nexa' },
+  { sym:'RXD',  name:'Radiant',        color:'#1E90FF', cgId:'radiant' },
 ];
 
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
@@ -1413,6 +1418,7 @@ const NET_HR = {
   'INI':  { perUnit: 0.0005, unit: 'MH/s' },
   'MONA': { perUnit: 0.01,   unit: 'GH/s' },
   'NEXA': { perUnit: 0.001,  unit: 'GH/s' },
+  'RXD':  { perUnit: 0.0001, unit: 'GH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1826,6 +1832,7 @@ const ALGO_COINS = {
   'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
   'X11': ['DASH'], 'Blake256R14': ['DCR'], 'Cuckatoo32': ['GRIN'], 'Groestl': ['GRS'],
   'Blake2b-HNS': ['HNS'], 'VersaHash': ['INI'], 'Lyra2REv2': ['MONA'], 'NexaPow': ['NEXA'],
+  'SHA512256d': ['RXD'],
 };
 // Reverse map: coin symbol → primary algorithm label for display
 const COIN_ALGO = {};
