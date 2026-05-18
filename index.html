@@ -1326,6 +1326,9 @@ const HARDWARE = [
   // GRIN — Cuckatoo32
   { id:'ipollo-g1',     name:'iPollo G1',               type:'asic', algo:'Cuckatoo32', coin:'GRIN', hr:36,  hrUnit:'GPS', watts:2800, release:'Dec 2020' },
   { id:'ipollo-g1mini', name:'iPollo G1 Mini',           type:'asic', algo:'Cuckatoo32', coin:'GRIN', hr:1.2, hrUnit:'GPS', watts:120,  release:'Jan 2021' },
+
+  // GRS — Groestl
+  { id:'zig-m1',        name:'Dayun Zig M1',             type:'asic', algo:'Groestl',    coin:'GRS',  hr:2.611, hrUnit:'GH/s', watts:784, release:'Nov 2018' },
 ];
 
 // ── COIN DATA ──
@@ -1353,6 +1356,7 @@ const COINS = [
   { sym:'BCN',  name:'Bytecoin',       color:'#FF1A8C', cgId:'bytecoin' },
   { sym:'DCR',  name:'Decred',         color:'#2ED6A1', cgId:'decred' },
   { sym:'GRIN', name:'Grin',           color:'#FFD700', cgId:'grin' },
+  { sym:'GRS',  name:'Groestlcoin',    color:'#00A95C', cgId:'groestlcoin' },
 ];
 
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
@@ -1375,6 +1379,7 @@ const NET_HR = {
   'DASH': { perUnit: 0.0001, unit: 'GH/s' },
   'DCR':  { perUnit: 0.0005, unit: 'TH/s' },
   'GRIN': { perUnit: 0.002,  unit: 'GPS' },
+  'GRS':  { perUnit: 0.005,  unit: 'GH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1786,7 +1791,7 @@ const ALGO_COINS = {
   'Etchash': ['ETC'], 'RandomX': ['XMR'],
   'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
   'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
-  'X11': ['DASH'], 'Blake256R14': ['DCR'], 'Cuckatoo32': ['GRIN'],
+  'X11': ['DASH'], 'Blake256R14': ['DCR'], 'Cuckatoo32': ['GRIN'], 'Groestl': ['GRS'],
 };
 // Reverse map: coin symbol → primary algorithm label for display
 const COIN_ALGO = {};
