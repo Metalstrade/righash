@@ -1323,6 +1323,19 @@ const HARDWARE = [
   { id:'d18',       name:'FFMiner Decred D18',         type:'asic', algo:'Blake256R14', coin:'DCR', hr:0.34, hrUnit:'TH/s', watts:180,  release:'Jun 2018' },
   { id:'bk-b',      name:'Baikal BK-B',                type:'asic', algo:'Blake256R14', coin:'DCR', hr:0.16, hrUnit:'TH/s', watts:410,  release:'Jan 2018' },
 
+  // HNS — Blake2b-HNS
+  { id:'hs3-ant',   name:'Antminer HS3',           type:'asic', algo:'Blake2b-HNS', coin:'HNS', hr:9000, hrUnit:'GH/s', watts:2079, release:'Dec 2022' },
+  { id:'hs6',       name:'Goldshell HS6',           type:'asic', algo:'Blake2b-HNS', coin:'HNS', hr:4300, hrUnit:'GH/s', watts:3250, release:'Oct 2022' },
+  { id:'hs6-se',    name:'Goldshell HS6-SE',        type:'asic', algo:'Blake2b-HNS', coin:'HNS', hr:3700, hrUnit:'GH/s', watts:3400, release:'Oct 2022' },
+  { id:'hs5',       name:'Goldshell HS5',           type:'asic', algo:'Blake2b-HNS', coin:'HNS', hr:2700, hrUnit:'GH/s', watts:2650, release:'Feb 2021' },
+  { id:'hs3',       name:'Goldshell HS3',           type:'asic', algo:'Blake2b-HNS', coin:'HNS', hr:2000, hrUnit:'GH/s', watts:2000, release:'Oct 2020' },
+  { id:'hs-lite',   name:'Goldshell HS Lite',       type:'asic', algo:'Blake2b-HNS', coin:'HNS', hr:1360, hrUnit:'GH/s', watts:1250, release:'Mar 2022' },
+  { id:'hs-box2',   name:'Goldshell HS-BOX 2',      type:'asic', algo:'Blake2b-HNS', coin:'HNS', hr:460,  hrUnit:'GH/s', watts:400,  release:'Jan 2024' },
+  { id:'hs3-se',    name:'Goldshell HS3-SE',        type:'asic', algo:'Blake2b-HNS', coin:'HNS', hr:930,  hrUnit:'GH/s', watts:930,  release:'Nov 2020' },
+  { id:'hs-box',    name:'Goldshell HS-BOX',        type:'asic', algo:'Blake2b-HNS', coin:'HNS', hr:235,  hrUnit:'GH/s', watts:230,  release:'May 2021' },
+  { id:'mars-h1',   name:'Hummer Miner Mars H1',    type:'asic', algo:'Blake2b-HNS', coin:'HNS', hr:88,   hrUnit:'GH/s', watts:2800, release:'Jul 2020' },
+  { id:'hs1-plus',  name:'Goldshell HS1-PLUS',      type:'asic', algo:'Blake2b-HNS', coin:'HNS', hr:105,  hrUnit:'GH/s', watts:115,  release:'Oct 2020' },
+
   // GRIN — Cuckatoo32
   { id:'ipollo-g1',     name:'iPollo G1',               type:'asic', algo:'Cuckatoo32', coin:'GRIN', hr:36,  hrUnit:'GPS', watts:2800, release:'Dec 2020' },
   { id:'ipollo-g1mini', name:'iPollo G1 Mini',           type:'asic', algo:'Cuckatoo32', coin:'GRIN', hr:1.2, hrUnit:'GPS', watts:120,  release:'Jan 2021' },
@@ -1380,6 +1393,7 @@ const NET_HR = {
   'DCR':  { perUnit: 0.0005, unit: 'TH/s' },
   'GRIN': { perUnit: 0.002,  unit: 'GPS' },
   'GRS':  { perUnit: 0.005,  unit: 'GH/s' },
+  'HNS':  { perUnit: 0.0001, unit: 'GH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1792,6 +1806,7 @@ const ALGO_COINS = {
   'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
   'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
   'X11': ['DASH'], 'Blake256R14': ['DCR'], 'Cuckatoo32': ['GRIN'], 'Groestl': ['GRS'],
+  'Blake2b-HNS': ['HNS'],
 };
 // Reverse map: coin symbol → primary algorithm label for display
 const COIN_ALGO = {};
