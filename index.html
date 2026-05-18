@@ -1342,6 +1342,18 @@ const HARDWARE = [
   { id:'zig-z1p',   name:'Dayun Zig Z1+',              type:'asic', algo:'Lyra2REv2', coin:'MONA', hr:7.25,  hrUnit:'GH/s', watts:1200, release:'Oct 2018' },
   { id:'zig-z1',    name:'Dayun Zig Z1',               type:'asic', algo:'Lyra2REv2', coin:'MONA', hr:6.8,   hrUnit:'GH/s', watts:1200, release:'Sep 2018' },
 
+  // SC — Blake2b-Sia
+  { id:'bm-s3p',    name:'iBeLink BM-S3+',            type:'asic', algo:'Blake2b-Sia', coin:'SC', hr:25,   hrUnit:'TH/s', watts:3400, release:'Apr 2025' },
+  { id:'bm-s3',     name:'iBeLink BM-S3',             type:'asic', algo:'Blake2b-Sia', coin:'SC', hr:19,   hrUnit:'TH/s', watts:3100, release:'Mar 2024' },
+  { id:'sc6-se',    name:'Goldshell SC6-SE',           type:'asic', algo:'Blake2b-Sia', coin:'SC', hr:17,   hrUnit:'TH/s', watts:3300, release:'Sep 2022' },
+  { id:'sc5pro2',   name:'Goldshell SC5 Pro II',       type:'asic', algo:'Blake2b-Sia', coin:'SC', hr:14,   hrUnit:'TH/s', watts:3300, release:'Jan 2026' },
+  { id:'bm-s1max',  name:'iBeLink BM-S1 Max',          type:'asic', algo:'Blake2b-Sia', coin:'SC', hr:12,   hrUnit:'TH/s', watts:3150, release:'May 2022' },
+  { id:'sc5pro',    name:'Goldshell SC5 Pro',          type:'asic', algo:'Blake2b-Sia', coin:'SC', hr:11,   hrUnit:'TH/s', watts:2820, release:'Jan 2024' },
+  { id:'sc-lite',   name:'Goldshell SC Lite',          type:'asic', algo:'Blake2b-Sia', coin:'SC', hr:4.4,  hrUnit:'TH/s', watts:950,  release:'Jan 2024' },
+  { id:'bm-s1',     name:'iBeLink BM-S1',              type:'asic', algo:'Blake2b-Sia', coin:'SC', hr:6.8,  hrUnit:'TH/s', watts:2350, release:'Mar 2022' },
+  { id:'sc-box2',   name:'Goldshell SC-BOX 2',         type:'asic', algo:'Blake2b-Sia', coin:'SC', hr:1.9,  hrUnit:'TH/s', watts:400,  release:'Mar 2023' },
+  { id:'sc-box',    name:'Goldshell SC-BOX',           type:'asic', algo:'Blake2b-Sia', coin:'SC', hr:0.9,  hrUnit:'TH/s', watts:200,  release:'Apr 2022' },
+
   // RXD — SHA512256d
   { id:'a11-rxd',   name:'DragonBall Miner A11',     type:'asic', algo:'SHA512256d', coin:'RXD', hr:3200, hrUnit:'GH/s', watts:2300, release:'Sep 2024' },
   { id:'rxo',       name:'IceRiver RXO',              type:'asic', algo:'SHA512256d', coin:'RXD', hr:260,  hrUnit:'GH/s', watts:100,  release:'Sep 2024' },
@@ -1419,6 +1431,7 @@ const NET_HR = {
   'MONA': { perUnit: 0.01,   unit: 'GH/s' },
   'NEXA': { perUnit: 0.001,  unit: 'GH/s' },
   'RXD':  { perUnit: 0.0001, unit: 'GH/s' },
+  'SC':   { perUnit: 0.001,  unit: 'TH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1832,7 +1845,7 @@ const ALGO_COINS = {
   'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
   'X11': ['DASH'], 'Blake256R14': ['DCR'], 'Cuckatoo32': ['GRIN'], 'Groestl': ['GRS'],
   'Blake2b-HNS': ['HNS'], 'VersaHash': ['INI'], 'Lyra2REv2': ['MONA'], 'NexaPow': ['NEXA'],
-  'SHA512256d': ['RXD'],
+  'SHA512256d': ['RXD'], 'Blake2b-Sia': ['SC'],
 };
 // Reverse map: coin symbol → primary algorithm label for display
 const COIN_ALGO = {};
