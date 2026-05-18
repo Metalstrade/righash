@@ -421,9 +421,10 @@ nav {
 /* Searchable hardware picker */
 .hw-search-wrap { position: relative; }
 .hw-list {
-  margin-top: 6px; border: 1px solid var(--border); border-radius: 4px;
-  background: var(--bg3); max-height: 200px; overflow-y: auto;
+  display: none; margin-top: 6px; border: 1px solid var(--border); border-radius: 4px;
+  background: var(--bg3); max-height: 220px; overflow-y: auto;
 }
+.hw-list.open { display: block; }
 .hw-list-item {
   padding: 9px 12px; cursor: pointer; font-size: 13px;
   border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;
@@ -736,7 +737,8 @@ footer {
     <div class="form-field">
       <label class="form-label">Select Hardware</label>
       <div class="hw-search-wrap">
-        <input type="text" id="hw-search" class="form-input" placeholder="Search miner…" oninput="filterHardware()" autocomplete="off">
+        <input type="text" id="hw-search" class="form-input" placeholder="Click to browse or type to search…"
+          oninput="filterHardware()" onfocus="openHwList()" onblur="scheduleCloseHwList()" autocomplete="off">
         <div id="hw-list" class="hw-list"></div>
         <input type="hidden" id="hw-select" value="">
       </div>
@@ -749,7 +751,10 @@ footer {
     </div>
 
     <div class="form-field" style="margin-top:16px;">
-      <label class="form-label">Coin Being Mined</label>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <label class="form-label" style="margin-bottom:0;">Coin Being Mined</label>
+        <button onclick="resetCoin()" style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;background:none;border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:3px;cursor:pointer;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.borderColor='var(--border2)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Reset</button>
+      </div>
       <div class="coin-grid" id="coin-grid"></div>
     </div>
 
@@ -1391,15 +1396,29 @@ function setMinerType(type) {
   buildHwList();
 }
 
+let _hwCloseTimer = null;
+
+function openHwList() {
+  buildHwList();
+  document.getElementById('hw-list').classList.add('open');
+}
+
+function scheduleCloseHwList() {
+  _hwCloseTimer = setTimeout(() => {
+    document.getElementById('hw-list').classList.remove('open');
+  }, 180);
+}
+
 function buildHwList() {
   const list = document.getElementById('hw-list');
   const query = (document.getElementById('hw-search').value || '').toLowerCase();
   const selectedId = document.getElementById('hw-select').value;
 
   let hw = HARDWARE.filter(h => h.type === addMinerType);
-  // Filter by selected coin if one is active
-  if (addSelectedCoin) hw = hw.filter(h => h.coin === addSelectedCoin);
-  // Filter by search query
+  // LTC/DOGE combined filter
+  if (addSelectedCoin === 'LTC/DOGE') hw = hw.filter(h => h.coin === 'LTC' || h.coin === 'DOGE');
+  else if (addSelectedCoin) hw = hw.filter(h => h.coin === addSelectedCoin);
+  // Search query filter
   if (query) hw = hw.filter(h => h.name.toLowerCase().includes(query));
 
   if (!hw.length) {
@@ -1407,7 +1426,9 @@ function buildHwList() {
     return;
   }
   list.innerHTML = hw.map(h => `
-    <div class="hw-list-item ${selectedId === h.id ? 'selected' : ''}" onclick="onHwSelect('${h.id}')">
+    <div class="hw-list-item ${selectedId === h.id ? 'selected' : ''}"
+      onmousedown="_hwCloseTimer && clearTimeout(_hwCloseTimer)"
+      onclick="onHwSelect('${h.id}')">
       <span class="hw-list-item-name">${h.name}</span>
       <span class="hw-list-item-spec">${h.hr} ${h.hrUnit} · ${h.watts}W</span>
     </div>`).join('');
@@ -1415,6 +1436,7 @@ function buildHwList() {
 
 function filterHardware() {
   buildHwList();
+  document.getElementById('hw-list').classList.add('open');
 }
 
 function onHwSelect(id) {
@@ -1423,38 +1445,63 @@ function onHwSelect(id) {
   if (!hw) { prev.classList.remove('show'); return; }
   document.getElementById('hw-select').value = id;
   document.getElementById('hw-search').value = hw.name;
+  document.getElementById('hw-list').classList.remove('open');
   document.getElementById('prev-hr').textContent = hw.hr + ' ' + hw.hrUnit;
   document.getElementById('prev-pw').textContent = hw.watts + ' W';
   document.getElementById('prev-algo').textContent = hw.algo;
   prev.classList.add('show');
-  // Auto-select coin and filter coin grid
-  addSelectedCoin = hw.coin;
+  // Auto-select coin group
+  addSelectedCoin = (hw.coin === 'LTC' || hw.coin === 'DOGE') ? 'LTC/DOGE' : hw.coin;
   buildCoinGrid(hw.algo);
-  buildHwList();
 }
 
 function buildCoinGrid(algo) {
   const grid = document.getElementById('coin-grid');
-  const relevant = algo && ALGO_COINS[algo] ? ALGO_COINS[algo] : COINS.map(c => c.sym);
-  const displayCoins = COINS.filter(c => relevant.includes(c.sym));
-  grid.innerHTML = displayCoins.map(c => `
-    <div class="coin-pill ${addSelectedCoin === c.sym ? 'active' : ''}" onclick="selectCoin('${c.sym}')" style="${addSelectedCoin === c.sym ? 'border-color:'+c.color+';' : ''}">
+  // Build display list — merge LTC+DOGE into one pill
+  const relevant = algo && ALGO_COINS[algo] ? ALGO_COINS[algo] : null;
+  let displayItems = [];
+  const seen = new Set();
+  const sourceCoins = relevant ? COINS.filter(c => relevant.includes(c.sym)) : COINS;
+  for (const c of sourceCoins) {
+    if (c.sym === 'LTC' || c.sym === 'DOGE') {
+      if (!seen.has('LTC/DOGE')) {
+        seen.add('LTC/DOGE');
+        displayItems.push({ sym:'LTC/DOGE', name:'Litecoin / Dogecoin', color:'#C2A633' });
+      }
+    } else {
+      displayItems.push(c);
+    }
+  }
+  const isLtcDoge = addSelectedCoin === 'LTC/DOGE';
+  grid.innerHTML = displayItems.map(c => {
+    const active = addSelectedCoin === c.sym || (c.sym === 'LTC/DOGE' && isLtcDoge);
+    return `<div class="coin-pill ${active ? 'active' : ''}" onclick="selectCoin('${c.sym}')" style="${active ? 'border-color:'+c.color+';' : ''}">
       <div class="coin-pill-sym" style="color:${c.color};">${c.sym}</div>
       <div class="coin-pill-name">${c.name}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function selectCoin(sym) {
   addSelectedCoin = sym;
   const selectedHwId = document.getElementById('hw-select').value;
   const currentHw = HARDWARE.find(h => h.id === selectedHwId);
-  // If selected miner doesn't mine this coin, clear the selection
-  if (currentHw && currentHw.coin !== sym) {
+  // Clear hardware if it doesn't match selected coin group
+  const hwCoinGroup = currentHw ? ((currentHw.coin === 'LTC' || currentHw.coin === 'DOGE') ? 'LTC/DOGE' : currentHw.coin) : null;
+  if (currentHw && hwCoinGroup !== sym) {
     document.getElementById('hw-select').value = '';
     document.getElementById('hw-search').value = '';
     document.getElementById('hw-preview').classList.remove('show');
   }
-  buildCoinGrid(currentHw?.coin === sym ? currentHw.algo : null);
+  buildCoinGrid(currentHw && hwCoinGroup === sym ? currentHw.algo : null);
+  buildHwList();
+}
+
+function resetCoin() {
+  addSelectedCoin = null;
+  const selectedHwId = document.getElementById('hw-select').value;
+  const currentHw = HARDWARE.find(h => h.id === selectedHwId);
+  buildCoinGrid(currentHw?.algo || null);
   buildHwList();
 }
 
@@ -1471,6 +1518,8 @@ async function submitAddMiner() {
   if (!addSelectedCoin) { err.textContent = 'Please select the coin being mined.'; err.style.display = 'block'; return; }
   const hw = HARDWARE.find(h => h.id === hwId);
   if (!hw) return;
+  // LTC/DOGE group → use hardware's native coin
+  const coinToStore = addSelectedCoin === 'LTC/DOGE' ? hw.coin : addSelectedCoin;
 
   const { data, error } = await sb.from('user_miners').insert({
     user_id:         currentUser.id,
@@ -1481,7 +1530,7 @@ async function submitAddMiner() {
     hashrate:        hw.hr,
     hashrate_unit:   hw.hrUnit,
     power_watts:     hw.watts,
-    coin:            addSelectedCoin,
+    coin:            coinToStore,
     electricity_rate: addElecRate,
   }).select().single();
 
