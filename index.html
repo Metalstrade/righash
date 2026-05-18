@@ -277,7 +277,7 @@ nav {
   border: 1px solid var(--border);
   border-radius: 8px;
   display: grid;
-  grid-template-columns: auto 1fr auto auto auto auto;
+  grid-template-columns: auto 1fr auto auto auto auto auto;
   align-items: center;
   gap: 0;
   overflow: hidden;
@@ -305,6 +305,19 @@ nav {
 .miner-stat { padding: 12px 16px; border-left: 1px solid var(--border); text-align: center; min-width: 80px; }
 .miner-stat-val { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; }
 .miner-stat-lbl { font-size: 10px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px; }
+
+.miner-qty { padding: 14px 14px; border-left: 1px solid var(--border); min-width: 110px; }
+.qty-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.qty-ctrl { display: flex; align-items: center; gap: 6px; }
+.qty-btn {
+  width: 22px; height: 22px; border-radius: 4px;
+  background: var(--bg4); border: 1px solid var(--border);
+  color: var(--muted2); font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+  transition: background 0.1s, color 0.1s; flex-shrink: 0;
+}
+.qty-btn:hover { background: var(--bg3); color: var(--text); }
+.qty-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text); min-width: 32px; text-align: center; }
 
 .miner-elec { padding: 14px 16px; border-left: 1px solid var(--border); min-width: 140px; }
 .elec-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
@@ -335,8 +348,8 @@ nav {
 .btn-miner-del:hover { background: rgba(240,100,90,0.1); border-color: rgba(240,100,90,0.3); color: var(--red); }
 
 @media (max-width: 700px) {
-  .miner-card { grid-template-columns: auto 1fr; grid-template-rows: auto auto auto; }
-  .miner-stat, .miner-elec, .miner-earnings { border-left: none; border-top: 1px solid var(--border); }
+  .miner-card { grid-template-columns: auto 1fr; grid-template-rows: auto auto auto auto; }
+  .miner-stat, .miner-qty, .miner-elec, .miner-earnings { border-left: none; border-top: 1px solid var(--border); }
   .miner-actions { border-left: none; border-top: 1px solid var(--border); }
 }
 
@@ -1793,20 +1806,29 @@ async function updateElec(id, delta) {
   renderMiners();
 }
 
+async function updateQuantity(id, delta) {
+  const m = userMiners.find(x => x.id === id);
+  if (!m) return;
+  const qty = Math.min(100, Math.max(1, (m.quantity ?? 1) + delta));
+  await sb.from('user_miners').update({ quantity: qty }).eq('id', id);
+  m.quantity = qty;
+  renderMiners();
+}
+
 // ── RENDER MINERS ──
 function calcDailyEarnings(miner) {
   const coin = miner.coin;
-  const elecCost = (miner.power_watts / 1000) * 24 * miner.electricity_rate;
-  // Scrypt (LTC/DOGE) — NiceHash profcalc/devices rate × BTC price (hashrate in GH/s)
+  const qty = miner.quantity ?? 1;
+  const elecCost = (miner.power_watts / 1000) * 24 * miner.electricity_rate * qty;
   if ((coin === 'LTC' || coin === 'DOGE') && nhScryptPerGH != null && coinPrices['BTC']) {
-    const gross = miner.hashrate * nhScryptPerGH * coinPrices['BTC'];
+    const gross = miner.hashrate * nhScryptPerGH * coinPrices['BTC'] * qty;
     return { gross, elecCost, net: gross - elecCost };
   }
   const price = coinPrices[coin] || 0;
   const net_hr = NET_HR[coin];
   if (!net_hr || !price) return { gross: 0, elecCost: 0, net: 0 };
   const perUnit = (wtmPerUnit[coin] != null) ? wtmPerUnit[coin] : net_hr.perUnit;
-  const gross = miner.hashrate * perUnit * price;
+  const gross = miner.hashrate * perUnit * price * qty;
   return { gross, elecCost, net: gross - elecCost };
 }
 
@@ -1846,6 +1868,14 @@ function renderMiners() {
         <div class="miner-stat-val">${m.power_watts} W</div>
         <div class="miner-stat-lbl">Power</div>
       </div>
+      <div class="miner-qty">
+        <div class="qty-label">Units</div>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="updateQuantity('${m.id}', -1)">−</button>
+          <div class="qty-val">${m.quantity ?? 1}</div>
+          <button class="qty-btn" onclick="updateQuantity('${m.id}', +1)">+</button>
+        </div>
+      </div>
       <div class="miner-elec">
         <div class="elec-label">USD/kWh</div>
         <div class="elec-ctrl">
@@ -1870,19 +1900,21 @@ function renderMiners() {
 }
 
 function updateStats() {
-  let totalGross = 0, totalNet = 0, totalWatts = 0;
+  let totalGross = 0, totalNet = 0, totalWatts = 0, totalUnits = 0;
   userMiners.forEach(m => {
+    const qty = m.quantity ?? 1;
     const { gross, net } = calcDailyEarnings(m);
     totalGross += gross;
     totalNet += net;
-    totalWatts += m.power_watts;
+    totalWatts += m.power_watts * qty;
+    totalUnits += qty;
   });
   document.getElementById('stat-daily').textContent = '$' + totalGross.toFixed(2);
   const netEl = document.getElementById('stat-net');
   netEl.textContent = (totalNet >= 0 ? '+' : '') + '$' + totalNet.toFixed(2);
   netEl.style.color = totalNet >= 0 ? '#10B981' : 'var(--red)';
   document.getElementById('stat-power').textContent = totalWatts >= 1000 ? (totalWatts/1000).toFixed(2) + ' kW' : totalWatts + ' W';
-  document.getElementById('stat-count').textContent = userMiners.length;
+  document.getElementById('stat-count').textContent = totalUnits;
 }
 
 // ── ADD MINER MODAL ──
@@ -2088,6 +2120,7 @@ async function submitAddMiner() {
     power_watts:     hw.watts,
     coin:            coinToStore,
     electricity_rate: addElecRate,
+    quantity:        1,
   }).select().single();
 
   if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
