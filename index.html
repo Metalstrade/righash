@@ -926,6 +926,24 @@ const HARDWARE = [
   { id:'a1346alph', name:'Antminer AL1 (ALPH)',    type:'asic', algo:'Blake3',     coin:'ALPH',hr:10,   hrUnit:'TH/s', watts:3500, release:'Apr 2024' },
   { id:'rtx3080alph',name:'RTX 3080 (ALPH)',       type:'gpu',  algo:'Blake3',     coin:'ALPH',hr:2.5,  hrUnit:'GH/s', watts:220,  release:'Sep 2020' },
 
+  // KDA — Blake2S
+  { id:'ka3-173',   name:'Antminer KA3 (173TH)',    type:'asic', algo:'Blake2S', coin:'KDA', hr:173,  hrUnit:'TH/s', watts:3287, release:'Jun 2024' },
+  { id:'ka3-166',   name:'Antminer KA3 (166TH)',    type:'asic', algo:'Blake2S', coin:'KDA', hr:166,  hrUnit:'TH/s', watts:3154, release:'Sep 2022' },
+  { id:'bm-k3',     name:'iBeLink BM-K3',           type:'asic', algo:'Blake2S', coin:'KDA', hr:70,   hrUnit:'TH/s', watts:3300, release:'Dec 2022' },
+  { id:'kd-max',    name:'Goldshell KD Max',         type:'asic', algo:'Blake2S', coin:'KDA', hr:40.2, hrUnit:'TH/s', watts:3350, release:'Jun 2022' },
+  { id:'bm-k1-max', name:'iBeLink BM-K1 Max',       type:'asic', algo:'Blake2S', coin:'KDA', hr:32,   hrUnit:'TH/s', watts:3200, release:'Jun 2022' },
+  { id:'kd6',       name:'Goldshell KD6',            type:'asic', algo:'Blake2S', coin:'KDA', hr:29.2, hrUnit:'TH/s', watts:2630, release:'Apr 2022' },
+  { id:'kd6-se',    name:'Goldshell KD6-SE',         type:'asic', algo:'Blake2S', coin:'KDA', hr:25.3, hrUnit:'TH/s', watts:2300, release:'Jun 2022' },
+  { id:'kd5-pro',   name:'Goldshell KD5 Pro',        type:'asic', algo:'Blake2S', coin:'KDA', hr:24.5, hrUnit:'TH/s', watts:3000, release:'Aug 2022' },
+  { id:'kd5',       name:'Goldshell KD5',            type:'asic', algo:'Blake2S', coin:'KDA', hr:18,   hrUnit:'TH/s', watts:2250, release:'Mar 2021' },
+  { id:'kd-lite',   name:'Goldshell KD Lite',        type:'asic', algo:'Blake2S', coin:'KDA', hr:16.2, hrUnit:'TH/s', watts:1330, release:'Jun 2022' },
+  { id:'bm-k1p',    name:'iBeLink BM-K1+',           type:'asic', algo:'Blake2S', coin:'KDA', hr:15,   hrUnit:'TH/s', watts:2250, release:'Sep 2021' },
+  { id:'kd2',       name:'Goldshell KD2',            type:'asic', algo:'Blake2S', coin:'KDA', hr:6,    hrUnit:'TH/s', watts:830,  release:'Mar 2021' },
+  { id:'bm-k1',     name:'iBeLink BM-K1',            type:'asic', algo:'Blake2S', coin:'KDA', hr:5.3,  hrUnit:'TH/s', watts:835,  release:'Nov 2020' },
+  { id:'kd-box2',   name:'Goldshell KD-BOX 2',       type:'asic', algo:'Blake2S', coin:'KDA', hr:5,    hrUnit:'TH/s', watts:400,  release:'Dec 2022' },
+  { id:'kd-box-pro',name:'Goldshell KD-BOX Pro',     type:'asic', algo:'Blake2S', coin:'KDA', hr:2.6,  hrUnit:'TH/s', watts:230,  release:'Mar 2022' },
+  { id:'kd-box',    name:'Goldshell KD-BOX',         type:'asic', algo:'Blake2S', coin:'KDA', hr:1.6,  hrUnit:'TH/s', watts:205,  release:'May 2021' },
+
   // ZEC — Equihash
   { id:'z15pro',    name:'Antminer Z15 Pro',        type:'asic', algo:'Equihash',   coin:'ZEC', hr:840,  hrUnit:'KH/s', watts:2780, release:'May 2022' },
   { id:'z15j',      name:'Antminer Z15J',           type:'asic', algo:'Equihash',   coin:'ZEC', hr:580,  hrUnit:'KH/s', watts:1500, release:'Nov 2021' },
@@ -975,6 +993,7 @@ const NET_HR = {
   'RVN':  { perUnit: 0.144,   unit: 'MH/s' },
   'ERGO': { perUnit: 3.6e-4,  unit: 'MH/s' },
   'ZEC':  { perUnit: 9.8e-5,  unit: 'KSol/s' },
+  'KDA':  { perUnit: 7.2,    unit: 'TH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1383,7 +1402,7 @@ const ALGO_COINS = {
   'kHeavyHash': ['KAS'], 'Blake2b': ['CKB'], 'Eaglesong': ['CKB'],
   'Etchash': ['ETC'], 'RandomX': ['XMR'],
   'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
-  'Equihash': ['ZEC'], 'Blake3': ['ALPH'],
+  'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'],
 };
 
 function setMinerType(type) {
