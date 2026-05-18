@@ -375,15 +375,26 @@ nav {
   .miner-card {
     grid-template-columns: 4px 1fr 1fr;
     grid-template-rows: auto auto auto auto;
+    align-items: stretch;
   }
-  /* bar fixed to 4px, spans all 4 rows */
   .miner-coin-bar { grid-column: 1; grid-row: 1 / -1; }
-  /* name row spans both content columns → sits flush left */
-  .miner-info { grid-column: 2 / 4; padding: 10px 10px; }
-  .miner-stat, .miner-qty, .miner-elec, .miner-earnings {
+  .miner-info { grid-column: 2 / 4; padding: 10px 10px; display: flex; flex-direction: column; justify-content: center; }
+  .miner-stat {
     border-left: none; border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
   }
-  .miner-actions { border-left: none; border-top: 1px solid var(--border); }
+  .miner-qty, .miner-elec {
+    border-left: none; border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .miner-earnings {
+    border-left: none; border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .miner-actions {
+    border-left: none; border-top: 1px solid var(--border);
+    justify-content: center;
+  }
   .miner-qty  { min-width: 0; }
   .miner-elec { min-width: 0; }
   .miners-section { padding: 8px 12px 40px; }
