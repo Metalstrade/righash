@@ -456,6 +456,7 @@ nav {
 .coin-pill.active { border-color: var(--accent) !important; background: rgba(255,255,255,0.08); }
 .coin-pill-sym { font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
 .coin-pill-name { font-size: 10px; color: var(--muted); }
+.coin-pill-algo { font-size: 9px; color: var(--muted); opacity: 0.6; margin-top: 1px; }
 
 /* Toast */
 .toast {
@@ -1215,6 +1216,26 @@ const HARDWARE = [
   { id:'a9',        name:'Innosilicon A9 ZMaster',  type:'asic', algo:'Equihash',   coin:'ZEC', hr:50,   hrUnit:'KH/s', watts:620,  release:'Jan 2018' },
   { id:'z9',        name:'Antminer Z9',             type:'asic', algo:'Equihash',   coin:'ZEC', hr:42,   hrUnit:'KH/s', watts:970,  release:'Jun 2018' },
   { id:'z9mini',    name:'Antminer Z9 Mini',        type:'asic', algo:'Equihash',   coin:'ZEC', hr:10,   hrUnit:'KH/s', watts:300,  release:'Jun 2018' },
+
+  // DCR — Blake256R14
+  { id:'stu-u1pp',  name:'StrongU STU-U1++',         type:'asic', algo:'Blake256R14', coin:'DCR', hr:52,   hrUnit:'TH/s', watts:2200, release:'Jul 2019' },
+  { id:'wtm-d1',    name:'MicroBT Whatsminer D1',     type:'asic', algo:'Blake256R14', coin:'DCR', hr:48,   hrUnit:'TH/s', watts:2200, release:'Nov 2018' },
+  { id:'dr5-35',    name:'Antminer DR5 (35Th)',        type:'asic', algo:'Blake256R14', coin:'DCR', hr:35,   hrUnit:'TH/s', watts:1610, release:'Sep 2021' },
+  { id:'dr5-34',    name:'Antminer DR5 (34Th)',        type:'asic', algo:'Blake256R14', coin:'DCR', hr:34,   hrUnit:'TH/s', watts:1800, release:'Dec 2018' },
+  { id:'stu-u1p',   name:'StrongU STU-U1+',            type:'asic', algo:'Blake256R14', coin:'DCR', hr:12.8, hrUnit:'TH/s', watts:1850, release:'Oct 2018' },
+  { id:'stu-u1',    name:'StrongU STU-U1',             type:'asic', algo:'Blake256R14', coin:'DCR', hr:11,   hrUnit:'TH/s', watts:1600, release:'Oct 2018' },
+  { id:'ds19',      name:'FFMiner DS19',               type:'asic', algo:'Blake256R14', coin:'DCR', hr:3.1,  hrUnit:'TH/s', watts:980,  release:'Aug 2018' },
+  { id:'d9p-dcr',   name:'Innosilicon D9+ DecredMaster',type:'asic',algo:'Blake256R14', coin:'DCR', hr:2.8,  hrUnit:'TH/s', watts:1230, release:'Aug 2018' },
+  { id:'d9-dcr',    name:'Innosilicon D9 DecredMaster', type:'asic', algo:'Blake256R14', coin:'DCR', hr:2.4,  hrUnit:'TH/s', watts:1000, release:'Apr 2018' },
+  { id:'b29',       name:'DragonMint B29',             type:'asic', algo:'Blake256R14', coin:'DCR', hr:2.1,  hrUnit:'TH/s', watts:900,  release:'Apr 2018' },
+  { id:'dr3',       name:'Antminer DR3',               type:'asic', algo:'Blake256R14', coin:'DCR', hr:7.8,  hrUnit:'TH/s', watts:1410, release:'Sep 2018' },
+  { id:'dsm7t',     name:'iBeLink DSM7T',              type:'asic', algo:'Blake256R14', coin:'DCR', hr:7,    hrUnit:'TH/s', watts:2100, release:'Aug 2018' },
+  { id:'dsm6t',     name:'iBeLink DSM6T',              type:'asic', algo:'Blake256R14', coin:'DCR', hr:6,    hrUnit:'TH/s', watts:2100, release:'Jun 2018' },
+  { id:'spd1',      name:'Biffily Snow Panther D1',    type:'asic', algo:'Blake256R14', coin:'DCR', hr:6,    hrUnit:'TH/s', watts:2100, release:'Jul 2018' },
+  { id:'dcr1',      name:'Obelisk DCR1',               type:'asic', algo:'Blake256R14', coin:'DCR', hr:1.2,  hrUnit:'TH/s', watts:500,  release:'Jun 2018' },
+  { id:'bk-d',      name:'Baikal BK-D',                type:'asic', algo:'Blake256R14', coin:'DCR', hr:0.32, hrUnit:'TH/s', watts:1100, release:'Jun 2018' },
+  { id:'d18',       name:'FFMiner Decred D18',         type:'asic', algo:'Blake256R14', coin:'DCR', hr:0.34, hrUnit:'TH/s', watts:180,  release:'Jun 2018' },
+  { id:'bk-b',      name:'Baikal BK-B',                type:'asic', algo:'Blake256R14', coin:'DCR', hr:0.16, hrUnit:'TH/s', watts:410,  release:'Jan 2018' },
 ];
 
 // ── COIN DATA ──
@@ -1241,6 +1262,7 @@ const COINS = [
   { sym:'SC',   name:'Siacoin',        color:'#1ED660', cgId:'siacoin' },
   { sym:'ALEO', name:'Aleo',           color:'#5F6FFF', cgId:'aleo' },
   { sym:'BCN',  name:'Bytecoin',       color:'#FF1A8C', cgId:'bytecoin' },
+  { sym:'DCR',  name:'Decred',         color:'#2ED6A1', cgId:'decred' },
 ];
 
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
@@ -1261,6 +1283,7 @@ const NET_HR = {
   'ALPH': { perUnit: 0.001, unit: 'GH/s' },
   'BCN':  { perUnit: 2000,  unit: 'KH/s' },
   'DASH': { perUnit: 0.0001, unit: 'GH/s' },
+  'DCR':  { perUnit: 0.0005, unit: 'TH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1280,6 +1303,7 @@ const WTM_COINS = {
   CKB:  { id: 321, scale: 1000 },  // WTM: GH/s,   miner: TH/s → ×1000
   KAS:  { id: 352, scale: 1    },  // WTM: TH/s,   miner: TH/s
   DASH: { id: 5,   scale: 1    },  // WTM: GH/s,   miner: GH/s
+  DCR:  { id: 152, scale: 1000 },  // WTM: GH/s,   miner: TH/s → ×1000
 };
 
 // codetabs.com CORS proxy → WhatToMine (free, no auth required)
@@ -1671,8 +1695,14 @@ const ALGO_COINS = {
   'Etchash': ['ETC'], 'RandomX': ['XMR'],
   'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
   'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
-  'X11': ['DASH'],
+  'X11': ['DASH'], 'Blake256R14': ['DCR'],
 };
+// Reverse map: coin symbol → primary algorithm label for display
+const COIN_ALGO = {};
+for (const [algo, coins] of Object.entries(ALGO_COINS)) {
+  for (const sym of coins) { if (!COIN_ALGO[sym]) COIN_ALGO[sym] = algo; }
+}
+COIN_ALGO['LTC/DOGE'] = 'Scrypt';
 
 function setMinerType(type) {
   addMinerType = type;
@@ -1767,9 +1797,11 @@ function buildCoinGrid(algo) {
   const isLtcDoge = addSelectedCoin === 'LTC/DOGE';
   grid.innerHTML = displayItems.map(c => {
     const active = addSelectedCoin === c.sym || (c.sym === 'LTC/DOGE' && isLtcDoge);
+    const algoLabel = COIN_ALGO[c.sym] || '';
     return `<div class="coin-pill ${active ? 'active' : ''}" onmousedown="_hwCloseTimer && clearTimeout(_hwCloseTimer)" onclick="selectCoin('${c.sym}')" style="${active ? 'border-color:'+c.color+';' : ''}">
       <div class="coin-pill-sym" style="color:${c.color};">${c.sym}</div>
       <div class="coin-pill-name">${c.name}</div>
+      ${algoLabel ? `<div class="coin-pill-algo">${algoLabel}</div>` : ''}
     </div>`;
   }).join('');
 }
