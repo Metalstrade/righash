@@ -1342,6 +1342,9 @@ const HARDWARE = [
   { id:'zig-z1p',   name:'Dayun Zig Z1+',              type:'asic', algo:'Lyra2REv2', coin:'MONA', hr:7.25,  hrUnit:'GH/s', watts:1200, release:'Oct 2018' },
   { id:'zig-z1',    name:'Dayun Zig Z1',               type:'asic', algo:'Lyra2REv2', coin:'MONA', hr:6.8,   hrUnit:'GH/s', watts:1200, release:'Sep 2018' },
 
+  // NEXA — NexaPow
+  { id:'a21',        name:'DragonBall Miner A21',      type:'asic', algo:'NexaPow', coin:'NEXA', hr:3.4, hrUnit:'GH/s', watts:1800, release:'Jan 2025' },
+
   // INI — VersaHash
   { id:'inibox-pro', name:'Pinecone Matches INIBOX Pro', type:'asic', algo:'VersaHash', coin:'INI', hr:2400, hrUnit:'MH/s', watts:1280, release:'Mar 2026' },
   { id:'inibox',     name:'Pinecone Matches INIBOX',     type:'asic', algo:'VersaHash', coin:'INI', hr:850,  hrUnit:'MH/s', watts:500,  release:'Jul 2025' },
@@ -1382,6 +1385,7 @@ const COINS = [
   { sym:'GRS',  name:'Groestlcoin',    color:'#6B9DB5', cgId:'groestlcoin' },
   { sym:'INI',  name:'Initverse',      color:'#7C3AED', cgId:'initverse' },
   { sym:'MONA', name:'MonaCoin',       color:'#D4A017', cgId:'monacoin' },
+  { sym:'NEXA', name:'Nexa',           color:'#F0B429', cgId:'nexa' },
 ];
 
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
@@ -1408,6 +1412,7 @@ const NET_HR = {
   'HNS':  { perUnit: 0.0001, unit: 'GH/s' },
   'INI':  { perUnit: 0.0005, unit: 'MH/s' },
   'MONA': { perUnit: 0.01,   unit: 'GH/s' },
+  'NEXA': { perUnit: 0.001,  unit: 'GH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1820,7 +1825,7 @@ const ALGO_COINS = {
   'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
   'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
   'X11': ['DASH'], 'Blake256R14': ['DCR'], 'Cuckatoo32': ['GRIN'], 'Groestl': ['GRS'],
-  'Blake2b-HNS': ['HNS'], 'VersaHash': ['INI'], 'Lyra2REv2': ['MONA'],
+  'Blake2b-HNS': ['HNS'], 'VersaHash': ['INI'], 'Lyra2REv2': ['MONA'], 'NexaPow': ['NEXA'],
 };
 // Reverse map: coin symbol → primary algorithm label for display
 const COIN_ALGO = {};
