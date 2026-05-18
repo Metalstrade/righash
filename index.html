@@ -372,10 +372,20 @@ nav {
 .btn-notes-cancel:hover { border-color: var(--border2); color: var(--text); }
 
 @media (max-width: 700px) {
-  .miner-card { grid-template-columns: auto 1fr; grid-template-rows: auto auto auto auto; }
-  .miner-stat, .miner-qty, .miner-elec, .miner-earnings { border-left: none; border-top: 1px solid var(--border); }
+  .miner-card {
+    grid-template-columns: 4px 1fr 1fr;
+    grid-template-rows: auto auto auto auto;
+  }
+  /* bar fixed to 4px, spans all 4 rows */
+  .miner-coin-bar { grid-column: 1; grid-row: 1 / -1; }
+  /* name row spans both content columns → sits flush left */
+  .miner-info { grid-column: 2 / 4; padding: 10px 10px; }
+  .miner-stat, .miner-qty, .miner-elec, .miner-earnings {
+    border-left: none; border-top: 1px solid var(--border);
+  }
   .miner-actions { border-left: none; border-top: 1px solid var(--border); }
-  .miner-info { padding: 10px 8px; }
+  .miner-qty  { min-width: 0; }
+  .miner-elec { min-width: 0; }
   .miners-section { padding: 8px 12px 40px; }
 }
 
