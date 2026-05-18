@@ -417,6 +417,25 @@ nav {
   padding-right: 32px;
 }
 .form-select:focus { outline: none; border-color: var(--accent); }
+
+/* Searchable hardware picker */
+.hw-search-wrap { position: relative; }
+.hw-list {
+  margin-top: 6px; border: 1px solid var(--border); border-radius: 4px;
+  background: var(--bg3); max-height: 200px; overflow-y: auto;
+}
+.hw-list-item {
+  padding: 9px 12px; cursor: pointer; font-size: 13px;
+  border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;
+  transition: background 0.1s;
+}
+.hw-list-item:last-child { border-bottom: none; }
+.hw-list-item:hover { background: var(--bg4); }
+.hw-list-item.selected { background: rgba(255,255,255,0.06); border-left: 2px solid var(--accent); }
+.hw-list-item-name { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); }
+.hw-list-item-spec { font-size: 10px; color: var(--muted); white-space: nowrap; margin-left: 8px; }
+.hw-list-empty { padding: 16px 12px; font-size: 12px; color: var(--muted); text-align: center; }
+
 .miner-preview {
   background: var(--bg3); border: 1px solid var(--border);
   border-radius: 6px; padding: 14px; margin-top: 12px;
@@ -716,9 +735,11 @@ footer {
 
     <div class="form-field">
       <label class="form-label">Select Hardware</label>
-      <select class="form-select" id="hw-select" onchange="onHwSelect()">
-        <option value="">— Select miner —</option>
-      </select>
+      <div class="hw-search-wrap">
+        <input type="text" id="hw-search" class="form-input" placeholder="Search miner…" oninput="filterHardware()" autocomplete="off">
+        <div id="hw-list" class="hw-list"></div>
+        <input type="hidden" id="hw-select" value="">
+      </div>
     </div>
 
     <div class="miner-preview" id="hw-preview">
@@ -1338,8 +1359,10 @@ function openAddMiner() {
   addSelectedCoin = null;
   document.getElementById('add-elec-val').textContent = '0.10';
   document.getElementById('add-error').style.display = 'none';
+  document.getElementById('hw-search').value = '';
   setMinerType('asic');
   buildCoinGrid();
+  buildHwList();
   document.getElementById('add-miner-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1348,43 +1371,71 @@ function closeAddMiner() {
   document.body.style.overflow = '';
 }
 
+const ALGO_COINS = {
+  'SHA-256': ['BTC', 'BCH'], 'Scrypt': ['LTC', 'DOGE'],
+  'kHeavyHash': ['KAS'], 'Blake2b': ['CKB'], 'Eaglesong': ['CKB'],
+  'Etchash': ['ETC'], 'RandomX': ['XMR'],
+  'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
+  'Equihash': ['ZEC'], 'Blake3': ['ALPH'],
+};
+
 function setMinerType(type) {
   addMinerType = type;
   document.getElementById('pill-asic').classList.toggle('active', type === 'asic');
   document.getElementById('pill-gpu').classList.toggle('active', type === 'gpu');
-  const sel = document.getElementById('hw-select');
-  const hw = HARDWARE.filter(h => h.type === type);
-  sel.innerHTML = '<option value="">— Select miner —</option>' + hw.map(h => `<option value="${h.id}">${h.name}</option>`).join('');
+  document.getElementById('hw-select').value = '';
+  document.getElementById('hw-search').value = '';
   document.getElementById('hw-preview').classList.remove('show');
   addSelectedCoin = null;
   buildCoinGrid();
+  buildHwList();
 }
 
-function onHwSelect() {
-  const id = document.getElementById('hw-select').value;
+function buildHwList() {
+  const list = document.getElementById('hw-list');
+  const query = (document.getElementById('hw-search').value || '').toLowerCase();
+  const selectedId = document.getElementById('hw-select').value;
+
+  let hw = HARDWARE.filter(h => h.type === addMinerType);
+  // Filter by selected coin if one is active
+  if (addSelectedCoin) hw = hw.filter(h => h.coin === addSelectedCoin);
+  // Filter by search query
+  if (query) hw = hw.filter(h => h.name.toLowerCase().includes(query));
+
+  if (!hw.length) {
+    list.innerHTML = `<div class="hw-list-empty">No miners found</div>`;
+    return;
+  }
+  list.innerHTML = hw.map(h => `
+    <div class="hw-list-item ${selectedId === h.id ? 'selected' : ''}" onclick="onHwSelect('${h.id}')">
+      <span class="hw-list-item-name">${h.name}</span>
+      <span class="hw-list-item-spec">${h.hr} ${h.hrUnit} · ${h.watts}W</span>
+    </div>`).join('');
+}
+
+function filterHardware() {
+  buildHwList();
+}
+
+function onHwSelect(id) {
   const hw = HARDWARE.find(h => h.id === id);
   const prev = document.getElementById('hw-preview');
   if (!hw) { prev.classList.remove('show'); return; }
+  document.getElementById('hw-select').value = id;
+  document.getElementById('hw-search').value = hw.name;
   document.getElementById('prev-hr').textContent = hw.hr + ' ' + hw.hrUnit;
   document.getElementById('prev-pw').textContent = hw.watts + ' W';
   document.getElementById('prev-algo').textContent = hw.algo;
   prev.classList.add('show');
-  // Auto-select the default coin
+  // Auto-select coin and filter coin grid
   addSelectedCoin = hw.coin;
   buildCoinGrid(hw.algo);
+  buildHwList();
 }
 
 function buildCoinGrid(algo) {
   const grid = document.getElementById('coin-grid');
-  // Filter relevant coins based on algorithm
-  const algoCoins = {
-    'SHA-256': ['BTC', 'BCH'], 'Scrypt': ['LTC', 'DOGE'],
-    'kHeavyHash': ['KAS'], 'Blake2b': ['CKB'], 'Eaglesong': ['CKB'],
-    'Etchash': ['ETC'], 'RandomX': ['XMR'],
-    'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
-    'Equihash': ['ZEC'], 'Blake3': ['ALPH'],
-  };
-  const relevant = algo && algoCoins[algo] ? algoCoins[algo] : COINS.map(c => c.sym);
+  const relevant = algo && ALGO_COINS[algo] ? ALGO_COINS[algo] : COINS.map(c => c.sym);
   const displayCoins = COINS.filter(c => relevant.includes(c.sym));
   grid.innerHTML = displayCoins.map(c => `
     <div class="coin-pill ${addSelectedCoin === c.sym ? 'active' : ''}" onclick="selectCoin('${c.sym}')" style="${addSelectedCoin === c.sym ? 'border-color:'+c.color+';' : ''}">
@@ -1395,7 +1446,16 @@ function buildCoinGrid(algo) {
 
 function selectCoin(sym) {
   addSelectedCoin = sym;
-  buildCoinGrid(document.getElementById('hw-select').value ? HARDWARE.find(h => h.id === document.getElementById('hw-select').value)?.algo : null);
+  const selectedHwId = document.getElementById('hw-select').value;
+  const currentHw = HARDWARE.find(h => h.id === selectedHwId);
+  // If selected miner doesn't mine this coin, clear the selection
+  if (currentHw && currentHw.coin !== sym) {
+    document.getElementById('hw-select').value = '';
+    document.getElementById('hw-search').value = '';
+    document.getElementById('hw-preview').classList.remove('show');
+  }
+  buildCoinGrid(currentHw?.coin === sym ? currentHw.algo : null);
+  buildHwList();
 }
 
 function adjAddElec(delta) {
