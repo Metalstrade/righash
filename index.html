@@ -1497,18 +1497,21 @@ async function fetchNhProfitability() {
     }
     if (!r?.ok) return;
     const devices = await r.json();
-    let totalPaying = 0, totalGH = 0;
+    // Collect per-GH rates from modern Scrypt ASICs (>=5 GH/s: L7, L9, L11, DG series)
+    // Use median — immune to outliers and legacy low-paying devices
+    const rates = [];
     for (const d of devices) {
       const p = parseFloat(d.paying);
       if (!p || !d.speeds) continue;
       try {
         const speeds = typeof d.speeds === 'string' ? JSON.parse(d.speeds) : d.speeds;
         const gh = (speeds['SCRYPT'] || 0) / 1e9;
-        if (gh >= 1) { totalPaying += p; totalGH += gh; } // only modern ASICs (>=1 GH/s)
+        if (gh >= 5) rates.push(p / gh);
       } catch {}
     }
-    if (totalGH > 0) {
-      nhScryptPerGH = totalPaying / totalGH; // weighted BTC per GH per day
+    if (rates.length > 0) {
+      rates.sort((a, b) => a - b);
+      nhScryptPerGH = rates[Math.floor(rates.length / 2)];
       if (userMiners.length) renderMiners();
     }
   } catch (e) {
