@@ -1876,7 +1876,7 @@ async function updateElec(id, delta) {
   const m = userMiners.find(x => x.id === id);
   if (!m) return;
   const rate = Math.max(0.001, Math.round((m.electricity_rate + delta) * 1000) / 1000);
-  await sb.from('user_miners').update({ electricity_rate: rate }).eq('id', id);
+  await sb.from('user_miners').update({ electricity_rate: rate }).eq('id', id).eq('user_id', currentUser.id);
   m.electricity_rate = rate;
   renderMiners();
 }
@@ -1885,7 +1885,7 @@ async function updateQuantity(id, delta) {
   const m = userMiners.find(x => x.id === id);
   if (!m) return;
   const qty = Math.min(100, Math.max(1, (m.quantity ?? 1) + delta));
-  await sb.from('user_miners').update({ quantity: qty }).eq('id', id);
+  await sb.from('user_miners').update({ quantity: qty }).eq('id', id).eq('user_id', currentUser.id);
   m.quantity = qty;
   renderMiners();
 }
@@ -1913,7 +1913,7 @@ async function saveNotes() {
   if (!notesMinerId) return;
   const serial = document.getElementById('notes-serial').value.trim();
   const notes  = document.getElementById('notes-text').value.trim();
-  await sb.from('user_miners').update({ serial_number: serial, notes }).eq('id', notesMinerId);
+  await sb.from('user_miners').update({ serial_number: serial, notes }).eq('id', notesMinerId).eq('user_id', currentUser.id);
   const m = userMiners.find(x => x.id === notesMinerId);
   if (m) { m.serial_number = serial; m.notes = notes; }
   closeNotes();
@@ -1954,16 +1954,17 @@ function renderMiners() {
     const coin = COINS.find(c => c.sym === m.coin) || { sym: m.coin, color: '#6B7A8D', name: m.coin };
     const { gross, elecCost, net } = calcDailyEarnings(m);
     const netCls = net >= 0 ? 'positive' : 'negative';
-    const hrDisplay = m.hashrate + ' ' + m.hashrate_unit;
+    const hrDisplay = esc(m.hashrate + ' ' + (m.hashrate_unit || ''));
     const hasNotes = !!(m.notes || m.serial_number);
+    const safeColor = /^#[0-9a-fA-F]{3,8}$/.test(coin.color) ? coin.color : '#6B7A8D';
     return `
     <div class="miner-card">
-      <div class="miner-coin-bar" style="background:${coin.color};"></div>
+      <div class="miner-coin-bar" style="background:${safeColor};"></div>
       <div class="miner-info">
         <div class="miner-name-wrap">
-          <span class="miner-chip" style="color:${coin.color};border-color:${coin.color}40;">${coin.sym}</span>
+          <span class="miner-chip" style="color:${safeColor};border-color:${safeColor}40;">${esc(coin.sym)}</span>
           <span class="miner-name">${esc(m.miner_name)}</span>
-          <span class="miner-type-badge">${m.miner_type?.toUpperCase()}</span>
+          <span class="miner-type-badge">${esc((m.miner_type || '').toUpperCase())}</span>
           ${m.serial_number ? `<span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;">#${esc(m.serial_number)}</span>` : ''}
         </div>
         <div class="miner-meta">${esc(m.algorithm)} · ${esc(m.coin)}</div>
@@ -1973,7 +1974,7 @@ function renderMiners() {
         <div class="miner-stat-lbl">Hashrate</div>
       </div>
       <div class="miner-stat">
-        <div class="miner-stat-val">${m.power_watts} W</div>
+        <div class="miner-stat-val">${esc(String(m.power_watts))} W</div>
         <div class="miner-stat-lbl">Power</div>
       </div>
       <div class="miner-qty">
