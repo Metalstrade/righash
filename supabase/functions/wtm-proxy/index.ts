@@ -14,6 +14,7 @@ const WTM_COIN_IDS: Record<string, number> = {
   ERGO: 340,
   CKB: 321,
   KAS: 352,
+  DASH: 5,
 };
 
 Deno.serve(async (req) => {

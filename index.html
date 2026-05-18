@@ -1178,6 +1178,33 @@ const HARDWARE = [
   { id:'bk-np',     name:'Baikal BK-N+',                 type:'asic', algo:'CryptoNight', coin:'BCN', hr:40,  hrUnit:'KH/s', watts:120, release:'Mar 2018' },
   { id:'bk-n',      name:'Baikal BK-N',                  type:'asic', algo:'CryptoNight', coin:'BCN', hr:20,  hrUnit:'KH/s', watts:60,  release:'Mar 2018' },
 
+  // DASH — X11
+  { id:'d9',        name:'Antminer D9',                  type:'asic', algo:'X11', coin:'DASH', hr:1770, hrUnit:'GH/s', watts:2839, release:'Feb 2023' },
+  { id:'d7',        name:'Antminer D7',                  type:'asic', algo:'X11', coin:'DASH', hr:1286, hrUnit:'GH/s', watts:3148, release:'Oct 2021' },
+  { id:'spx36',     name:'Spondoolies SPx36',             type:'asic', algo:'X11', coin:'DASH', hr:540,  hrUnit:'GH/s', watts:4400, release:'Sep 2018' },
+  { id:'stu-u6',    name:'StrongU STU-U6',                type:'asic', algo:'X11', coin:'DASH', hr:440,  hrUnit:'GH/s', watts:2200, release:'Nov 2019' },
+  { id:'x7-dash',   name:'FusionSilicon X7 Miner',        type:'asic', algo:'X11', coin:'DASH', hr:262,  hrUnit:'GH/s', watts:1420, release:'Mar 2019' },
+  { id:'d5',        name:'Antminer D5',                   type:'asic', algo:'X11', coin:'DASH', hr:119,  hrUnit:'GH/s', watts:1566, release:'Nov 2018' },
+  { id:'a5p-dash',  name:'Innosilicon A5+ DashMaster',    type:'asic', algo:'X11', coin:'DASH', hr:65,   hrUnit:'GH/s', watts:1500, release:'Mar 2018' },
+  { id:'dm56g',     name:'iBeLink DM56G',                 type:'asic', algo:'X11', coin:'DASH', hr:56,   hrUnit:'GH/s', watts:2100, release:'May 2018' },
+  { id:'zig-d1',    name:'Dayun Zig D1',                  type:'asic', algo:'X11', coin:'DASH', hr:48,   hrUnit:'GH/s', watts:2200, release:'Nov 2018' },
+  { id:'bk-g28',    name:'Baikal BK-G28',                 type:'asic', algo:'X11', coin:'DASH', hr:28,   hrUnit:'GH/s', watts:1300, release:'Oct 2018' },
+  { id:'a5-dash',   name:'Innosilicon A5 DashMaster',     type:'asic', algo:'X11', coin:'DASH', hr:32.5, hrUnit:'GH/s', watts:750,  release:'Oct 2017' },
+  { id:'dm22g',     name:'iBeLink DM22G',                 type:'asic', algo:'X11', coin:'DASH', hr:22,   hrUnit:'GH/s', watts:810,  release:'Sep 2017' },
+  { id:'dr100pro',  name:'PinIdea DR-100 Pro',             type:'asic', algo:'X11', coin:'DASH', hr:21,   hrUnit:'GH/s', watts:900,  release:'Nov 2017' },
+  { id:'d3-19',     name:'Antminer D3 (19.3Gh)',           type:'asic', algo:'X11', coin:'DASH', hr:19.3, hrUnit:'GH/s', watts:1350, release:'Oct 2017' },
+  { id:'dr100',     name:'PinIdea DR-100',                 type:'asic', algo:'X11', coin:'DASH', hr:19,   hrUnit:'GH/s', watts:900,  release:'Aug 2017' },
+  { id:'d3-17',     name:'Antminer D3 (17.5Gh)',           type:'asic', algo:'X11', coin:'DASH', hr:17.5, hrUnit:'GH/s', watts:1280, release:'Oct 2017' },
+  { id:'d3-15',     name:'Antminer D3 (15Gh)',             type:'asic', algo:'X11', coin:'DASH', hr:15,   hrUnit:'GH/s', watts:1200, release:'Sep 2017' },
+  { id:'dm11g',     name:'iBeLink DM11G',                  type:'asic', algo:'X11', coin:'DASH', hr:10.8, hrUnit:'GH/s', watts:810,  release:'Jul 2017' },
+  { id:'bk-x',      name:'Baikal BK-X',                   type:'asic', algo:'X11', coin:'DASH', hr:10,   hrUnit:'GH/s', watts:630,  release:'Nov 2017' },
+  { id:'bk-a2000',  name:'Baikal Giant+ A2000',            type:'asic', algo:'X11', coin:'DASH', hr:2,    hrUnit:'GH/s', watts:450,  release:'Aug 2017' },
+  { id:'dr3',       name:'PinIdea DR-3',                   type:'asic', algo:'X11', coin:'DASH', hr:0.6,  hrUnit:'GH/s', watts:345,  release:'Apr 2017' },
+  { id:'bk-a900',   name:'Baikal Giant A900',              type:'asic', algo:'X11', coin:'DASH', hr:0.9,  hrUnit:'GH/s', watts:270,  release:'Oct 2016' },
+  { id:'bk-quad',   name:'Baikal Quadruple Mini Miner',    type:'asic', algo:'X11', coin:'DASH', hr:0.6,  hrUnit:'GH/s', watts:192,  release:'Aug 2016' },
+  { id:'bk-cube',   name:'Baikal Miner Cube',              type:'asic', algo:'X11', coin:'DASH', hr:0.3,  hrUnit:'GH/s', watts:90,   release:'Apr 2017' },
+  { id:'bk-mini',   name:'Baikal Mini Miner',              type:'asic', algo:'X11', coin:'DASH', hr:0.15, hrUnit:'GH/s', watts:50,   release:'Sep 2016' },
+
   // ZEC — Equihash
   { id:'z15pro',    name:'Antminer Z15 Pro',        type:'asic', algo:'Equihash',   coin:'ZEC', hr:840,  hrUnit:'KH/s', watts:2780, release:'May 2022' },
   { id:'z15j',      name:'Antminer Z15J',           type:'asic', algo:'Equihash',   coin:'ZEC', hr:580,  hrUnit:'KH/s', watts:1500, release:'Nov 2021' },
@@ -1233,6 +1260,7 @@ const NET_HR = {
   'ALEO': { perUnit: 0.8,   unit: 'MH/s' },
   'ALPH': { perUnit: 0.001, unit: 'GH/s' },
   'BCN':  { perUnit: 2000,  unit: 'KH/s' },
+  'DASH': { perUnit: 0.0001, unit: 'GH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1251,6 +1279,7 @@ const WTM_COINS = {
   ERGO: { id: 340, scale: 1    },  // WTM: MH/s,   miner: MH/s
   CKB:  { id: 321, scale: 1000 },  // WTM: GH/s,   miner: TH/s → ×1000
   KAS:  { id: 352, scale: 1    },  // WTM: TH/s,   miner: TH/s
+  DASH: { id: 5,   scale: 1    },  // WTM: GH/s,   miner: GH/s
 };
 
 // codetabs.com CORS proxy → WhatToMine (free, no auth required)
@@ -1642,6 +1671,7 @@ const ALGO_COINS = {
   'Etchash': ['ETC'], 'RandomX': ['XMR'],
   'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
   'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
+  'X11': ['DASH'],
 };
 
 function setMinerType(type) {
