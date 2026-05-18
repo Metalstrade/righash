@@ -338,14 +338,38 @@ nav {
 .miner-earn-net.negative { color: var(--red); }
 .miner-earn-gross { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; margin-top: 3px; }
 
-.miner-actions { padding: 0 12px; border-left: 1px solid var(--border); }
-.btn-miner-del {
+.miner-actions { padding: 0 10px; border-left: 1px solid var(--border); display: flex; gap: 4px; align-items: center; }
+.btn-miner-del, .btn-miner-note {
   width: 28px; height: 28px; border-radius: 4px;
   background: none; border: 1px solid transparent; color: var(--muted);
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: background 0.1s, color 0.1s, border-color 0.1s;
+  transition: background 0.1s, color 0.1s, border-color 0.1s; flex-shrink: 0;
 }
 .btn-miner-del:hover { background: rgba(240,100,90,0.1); border-color: rgba(240,100,90,0.3); color: var(--red); }
+.btn-miner-note:hover { background: rgba(245,166,35,0.1); border-color: rgba(245,166,35,0.3); color: var(--gold); }
+.btn-miner-note.has-notes { color: var(--gold); }
+
+/* Notes modal */
+.notes-modal-box {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 28px; width: 100%; max-width: 440px;
+  position: relative;
+}
+.notes-modal-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.notes-modal-miner { font-size: 12px; color: var(--muted); margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; }
+.notes-textarea {
+  resize: vertical; min-height: 100px; font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+}
+.notes-actions { display: flex; gap: 8px; margin-top: 16px; }
+.btn-notes-cancel {
+  flex: 1; padding: 12px; border-radius: 4px; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; background: none;
+  border: 1px solid var(--border); color: var(--muted);
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-notes-cancel:hover { border-color: var(--border2); color: var(--text); }
 
 @media (max-width: 700px) {
   .miner-card { grid-template-columns: auto 1fr; grid-template-rows: auto auto auto auto; }
@@ -785,6 +809,27 @@ footer {
 
     <div class="form-error" id="add-error"></div>
     <button class="btn-form-submit" style="margin-top:16px;" onclick="submitAddMiner()">Add to Dashboard</button>
+  </div>
+</div>
+
+<!-- Notes Modal -->
+<div class="modal-overlay" id="notes-overlay" onclick="if(event.target===this)closeNotes()">
+  <div class="notes-modal-box">
+    <button class="modal-close" onclick="closeNotes()">✕</button>
+    <div class="notes-modal-title">Miner Notes</div>
+    <div class="notes-modal-miner" id="notes-modal-miner"></div>
+    <div class="form-field">
+      <label class="form-label">Serial Number</label>
+      <input type="text" id="notes-serial" class="form-input" placeholder="e.g. AN-L9-2024-XXXXX" autocomplete="off">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Notes</label>
+      <textarea id="notes-text" class="form-input notes-textarea" placeholder="Location, service history, issues, hosting details…" rows="5" onkeydown="if(event.ctrlKey&&event.key==='Enter')saveNotes()"></textarea>
+    </div>
+    <div class="notes-actions">
+      <button class="btn-form-submit" style="flex:1;" onclick="saveNotes()">Save</button>
+      <button class="btn-notes-cancel" onclick="closeNotes()">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -1815,6 +1860,37 @@ async function updateQuantity(id, delta) {
   renderMiners();
 }
 
+// ── MINER NOTES ──
+let notesMinerId = null;
+
+function openNotes(id) {
+  const m = userMiners.find(x => x.id === id);
+  if (!m) return;
+  notesMinerId = id;
+  document.getElementById('notes-modal-miner').textContent = m.miner_name;
+  document.getElementById('notes-serial').value = m.serial_number || '';
+  document.getElementById('notes-text').value = m.notes || '';
+  document.getElementById('notes-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('notes-serial').focus(), 50);
+}
+
+function closeNotes() {
+  document.getElementById('notes-overlay').classList.remove('open');
+  notesMinerId = null;
+}
+
+async function saveNotes() {
+  if (!notesMinerId) return;
+  const serial = document.getElementById('notes-serial').value.trim();
+  const notes  = document.getElementById('notes-text').value.trim();
+  await sb.from('user_miners').update({ serial_number: serial, notes }).eq('id', notesMinerId);
+  const m = userMiners.find(x => x.id === notesMinerId);
+  if (m) { m.serial_number = serial; m.notes = notes; }
+  closeNotes();
+  renderMiners();
+  showToast('Notes saved', 'success');
+}
+
 // ── RENDER MINERS ──
 function calcDailyEarnings(miner) {
   const coin = miner.coin;
@@ -1849,6 +1925,7 @@ function renderMiners() {
     const { gross, elecCost, net } = calcDailyEarnings(m);
     const netCls = net >= 0 ? 'positive' : 'negative';
     const hrDisplay = m.hashrate + ' ' + m.hashrate_unit;
+    const hasNotes = !!(m.notes || m.serial_number);
     return `
     <div class="miner-card">
       <div class="miner-coin-bar" style="background:${coin.color};"></div>
@@ -1857,6 +1934,7 @@ function renderMiners() {
           <span class="miner-chip" style="color:${coin.color};border-color:${coin.color}40;">${coin.sym}</span>
           <span class="miner-name">${esc(m.miner_name)}</span>
           <span class="miner-type-badge">${m.miner_type?.toUpperCase()}</span>
+          ${m.serial_number ? `<span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;">#${esc(m.serial_number)}</span>` : ''}
         </div>
         <div class="miner-meta">${esc(m.algorithm)} · ${esc(m.coin)}</div>
       </div>
@@ -1890,6 +1968,9 @@ function renderMiners() {
         <div class="miner-earn-gross" style="color:var(--red);">Elec $${elecCost.toFixed(2)}</div>
       </div>
       <div class="miner-actions">
+        <button class="btn-miner-note ${hasNotes ? 'has-notes' : ''}" onclick="openNotes('${m.id}')" title="Notes">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+        </button>
         <button class="btn-miner-del" onclick="deleteMiner('${m.id}')" title="Remove miner">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         </button>
