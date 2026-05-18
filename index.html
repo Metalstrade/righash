@@ -53,8 +53,9 @@ body {
   white-space: nowrap;
   will-change: transform;
 }
-.t-item { display: inline-flex; align-items: center; gap: 5px; padding: 0 12px; font-size: 11px; font-family: 'JetBrains Mono', monospace; }
-.t-sym { color: var(--muted2); font-weight: 500; letter-spacing: 0.05em; }
+.t-item { display: inline-flex; align-items: center; gap: 6px; padding: 0 14px; font-size: 11px; font-family: 'JetBrains Mono', monospace; }
+.t-sym { color: var(--muted2); font-weight: 600; letter-spacing: 0.05em; }
+.t-price { color: var(--text); font-weight: 500; font-size: 11px; }
 .t-pct { font-weight: 600; font-size: 10px; }
 .t-pct.up   { color: var(--green); }
 .t-pct.down { color: var(--red); }
@@ -64,7 +65,7 @@ body {
 /* ── NAV ── */
 nav {
   position: sticky; top: 0; z-index: 200;
-  background: rgba(31,41,55,0.97);
+  background: rgba(10,10,10,0.97);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   height: 56px;
@@ -77,9 +78,9 @@ nav {
   text-decoration: none; color: var(--text);
   flex-shrink: 0;
 }
-.nav-logo-icon { width: 28px; height: 28px; }
-.nav-logo-text { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 500; letter-spacing: 0.02em; }
-.nav-logo-sub { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); display: block; line-height: 1; margin-top: 1px; }
+.nav-logo-icon { width: 34px; height: 34px; }
+.nav-logo-text { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 500; letter-spacing: 0.02em; }
+.nav-logo-sub { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); display: block; line-height: 1; margin-top: 2px; }
 .nav-spacer { flex: 1; }
 .btn-nav-outline {
   padding: 7px 18px; border-radius: 4px; font-size: 12px; font-weight: 600;
@@ -1034,24 +1035,37 @@ async function initTicker() {
     if (userMiners.length) renderMiners();
   } catch {}
 
+  function fmtPrice(v, lbl) {
+    if (v == null) return '';
+    if (lbl === 'EUR/USD') return v.toFixed(4);
+    if (v >= 10000) return '$' + v.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    if (v >= 100)  return '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (v >= 1)    return '$' + v.toFixed(2);
+    if (v >= 0.01) return '$' + v.toFixed(4);
+    return '$' + v.toFixed(6);
+  }
+
   const TICKER_ITEMS = [
     // From financial edge func
     ...['AU','AG','CU','OIL','S&P','NDQ','EUR/USD','BTC'].map(lbl => {
       const d = financial.find(x => x.label === lbl);
-      return { label: lbl, pct: d?.pct ?? null };
+      return { label: lbl, price: d?.price ?? null, pct: d?.pct ?? null };
     }),
-    // Extra crypto
-    { label: 'DOGE', pct: crypto['dogecoin']?.usd_24h_change ?? null },
-    { label: 'KAS',  pct: crypto['kaspa']?.usd_24h_change ?? null },
-    { label: 'CKB',  pct: crypto['nervos-network']?.usd_24h_change ?? null },
+    // Crypto — price from CoinGecko
+    { label: 'ETH',  price: crypto['ethereum']?.usd ?? null,       pct: crypto['ethereum']?.usd_24h_change ?? null },
+    { label: 'DOGE', price: crypto['dogecoin']?.usd ?? null,       pct: crypto['dogecoin']?.usd_24h_change ?? null },
+    { label: 'KAS',  price: crypto['kaspa']?.usd ?? null,          pct: crypto['kaspa']?.usd_24h_change ?? null },
+    { label: 'CKB',  price: crypto['nervos-network']?.usd ?? null, pct: crypto['nervos-network']?.usd_24h_change ?? null },
+    { label: 'XMR',  price: crypto['monero']?.usd ?? null,         pct: crypto['monero']?.usd_24h_change ?? null },
   ];
 
   function buildHTML(arr) {
     return arr.map(item => {
       const p = item.pct, has = p != null;
       const cls = !has ? 'flat' : p > 0 ? 'up' : p < 0 ? 'down' : 'flat';
-      const str = has ? `${p > 0 ? '+' : ''}${p.toFixed(2)}%` : '—';
-      return `<span class="t-item"><span class="t-sym">${item.label}</span><span class="t-pct ${cls}">${str}</span></span><span class="t-dot">◆</span>`;
+      const pctStr = has ? `${p > 0 ? '+' : ''}${p.toFixed(2)}%` : '—';
+      const priceStr = fmtPrice(item.price, item.label);
+      return `<span class="t-item"><span class="t-sym">${item.label}</span>${priceStr ? `<span class="t-price">${priceStr}</span>` : ''}<span class="t-pct ${cls}">${pctStr}</span></span><span class="t-dot">◆</span>`;
     }).join('');
   }
 
