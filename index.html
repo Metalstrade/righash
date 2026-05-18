@@ -1491,14 +1491,15 @@ const WTM_BASE = 'https://api.codetabs.com/v1/proxy?quest=https://whattomine.com
 
 async function fetchNhProfitability() {
   try {
-    let r = await fetch('https://api2.nicehash.com/main/api/v2/public/profcalc/devices').catch(() => null);
-    if (!r?.ok) {
-      r = await fetch('https://api.codetabs.com/v1/proxy?quest=https://api2.nicehash.com/main/api/v2/public/profcalc/devices');
-    }
+    // Try Vercel serverless proxy first (CORS-safe, deployed alongside the app)
+    let r = await fetch('/api/nh-proxy').catch(() => null);
+    // Fallback: direct NiceHash (works in some environments)
+    if (!r?.ok) r = await fetch('https://api2.nicehash.com/main/api/v2/public/profcalc/devices').catch(() => null);
+    // Fallback: Supabase edge function
+    if (!r?.ok) r = await fetch('https://xurgxkrnmutmocqbjffw.supabase.co/functions/v1/nh-proxy').catch(() => null);
     if (!r?.ok) return;
-    const devices = await r.json();
-    // Collect per-GH rates from modern Scrypt ASICs (>=5 GH/s: L7, L9, L11, DG series)
-    // Use median — immune to outliers and legacy low-paying devices
+    const json = await r.json();
+    const devices = Array.isArray(json) ? json : (json.devices || []);
     const rates = [];
     for (const d of devices) {
       const p = parseFloat(d.paying);
