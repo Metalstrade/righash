@@ -1467,12 +1467,14 @@ const NET_HR = {
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
 let wtmPerUnit = {};
 
+// NiceHash Scrypt paying rate: BTC per GH/s per day (covers LTC/DOGE miners)
+let nhScryptPaying = null;
+
 // WhatToMine coin IDs. scale = multiply estimated_rewards to match miner's stored hashrate unit.
 // e.g. WTM uses GH/s for CKB but miners store TH/s → scale 1000 (1 TH = 1000 GH)
+// LTC/DOGE excluded — profitability sourced from NiceHash instead
 const WTM_COINS = {
   BTC:  { id: 1,   scale: 1    },  // WTM: TH/s,   miner: TH/s
-  LTC:  { id: 4,   scale: 1    },  // WTM: GH/s,   miner: GH/s
-  DOGE: { id: 6,   scale: 1    },  // WTM: GH/s,   miner: GH/s
   XMR:  { id: 101, scale: 1    },  // WTM: KH/s,   miner: KH/s
   ZEC:  { id: 166, scale: 1    },  // WTM: KSol/s, miner: KSol/s
   ETC:  { id: 162, scale: 1    },  // WTM: MH/s,   miner: MH/s
@@ -1486,6 +1488,25 @@ const WTM_COINS = {
 
 // codetabs.com CORS proxy → WhatToMine (free, no auth required)
 const WTM_BASE = 'https://api.codetabs.com/v1/proxy?quest=https://whattomine.com';
+
+async function fetchNhProfitability() {
+  try {
+    // NiceHash public API — try direct (supports CORS), fall back to proxy
+    let r = await fetch('https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info').catch(() => null);
+    if (!r?.ok) {
+      r = await fetch('https://api.codetabs.com/v1/proxy?quest=https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info');
+    }
+    if (!r.ok) return;
+    const data = await r.json();
+    const scrypt = data.miningAlgorithms?.find(a => a.algorithm === 'SCRYPT');
+    if (scrypt?.paying) {
+      nhScryptPaying = parseFloat(scrypt.paying); // BTC per GH/s per day
+      if (userMiners.length) renderMiners();
+    }
+  } catch (e) {
+    console.warn('NiceHash fetch failed, Scrypt uses fallback values', e);
+  }
+}
 
 async function fetchWtmProfitability() {
   try {
@@ -1763,13 +1784,18 @@ async function updateElec(id, delta) {
 // ── RENDER MINERS ──
 function calcDailyEarnings(miner) {
   const coin = miner.coin;
+  const elecCost = (miner.power_watts / 1000) * 24 * miner.electricity_rate;
+  // Scrypt (LTC/DOGE) — NiceHash paying rate × BTC price (miner.hashrate in GH/s)
+  if ((coin === 'LTC' || coin === 'DOGE') && nhScryptPaying != null && coinPrices['BTC']) {
+    const gross = miner.hashrate * nhScryptPaying * coinPrices['BTC'];
+    return { gross, elecCost, net: gross - elecCost };
+  }
+  // All other coins — WhatToMine / fallback
   const price = coinPrices[coin] || 0;
   const net_hr = NET_HR[coin];
   if (!net_hr || !price) return { gross: 0, elecCost: 0, net: 0 };
-  // Use live WhatToMine value when available, else fallback
   const perUnit = (wtmPerUnit[coin] != null) ? wtmPerUnit[coin] : net_hr.perUnit;
   const gross = miner.hashrate * perUnit * price;
-  const elecCost = (miner.power_watts / 1000) * 24 * miner.electricity_rate;
   return { gross, elecCost, net: gross - elecCost };
 }
 
@@ -2077,7 +2103,10 @@ function showToast(msg, type) {
 
 // ── INIT ──
 initTicker();
-// Fetch live WhatToMine profitability data, refresh every 5 min
+// Fetch NiceHash Scrypt profitability (LTC/DOGE), refresh every 5 min
+fetchNhProfitability();
+setInterval(fetchNhProfitability, 5 * 60 * 1000);
+// Fetch WhatToMine profitability for all other coins, refresh every 5 min
 fetchWtmProfitability();
 setInterval(fetchWtmProfitability, 5 * 60 * 1000);
 // Refresh prices every 60s
