@@ -971,6 +971,18 @@ const HARDWARE = [
   { id:'ae-card',   name:'Goldshell AE Card',        type:'asic', algo:'zkSNARK', coin:'ALEO', hr:5.5,  hrUnit:'MH/s', watts:65,   release:'Mar 2025' },
   { id:'ae-byte',   name:'Goldshell Byte',           type:'asic', algo:'zkSNARK', coin:'ALEO', hr:5.5,  hrUnit:'MH/s', watts:140,  release:'Mar 2025' },
 
+  // BCN — CryptoNight
+  { id:'bk-n240',   name:'Baikal BK-N240',              type:'asic', algo:'CryptoNight', coin:'BCN', hr:240, hrUnit:'KH/s', watts:650, release:'May 2018' },
+  { id:'a8p',       name:'Innosilicon A8+ CryptoMaster', type:'asic', algo:'CryptoNight', coin:'BCN', hr:240, hrUnit:'KH/s', watts:480, release:'Apr 2018' },
+  { id:'x3',        name:'Antminer X3',                  type:'asic', algo:'CryptoNight', coin:'BCN', hr:220, hrUnit:'KH/s', watts:465, release:'May 2018' },
+  { id:'a8',        name:'Innosilicon A8 CryptoMaster',  type:'asic', algo:'CryptoNight', coin:'BCN', hr:160, hrUnit:'KH/s', watts:350, release:'Apr 2018' },
+  { id:'a8c',       name:'Innosilicon A8C CryptoMaster', type:'asic', algo:'CryptoNight', coin:'BCN', hr:80,  hrUnit:'KH/s', watts:175, release:'May 2018' },
+  { id:'bk-n70',    name:'Baikal BK-N70',                type:'asic', algo:'CryptoNight', coin:'BCN', hr:70,  hrUnit:'KH/s', watts:240, release:'May 2018' },
+  { id:'rr-210',    name:'PinIdea RR-210',               type:'asic', algo:'CryptoNight', coin:'BCN', hr:30,  hrUnit:'KH/s', watts:350, release:'Apr 2018' },
+  { id:'rr-200',    name:'PinIdea RR-200',               type:'asic', algo:'CryptoNight', coin:'BCN', hr:27,  hrUnit:'KH/s', watts:350, release:'Apr 2018' },
+  { id:'bk-np',     name:'Baikal BK-N+',                 type:'asic', algo:'CryptoNight', coin:'BCN', hr:40,  hrUnit:'KH/s', watts:120, release:'Mar 2018' },
+  { id:'bk-n',      name:'Baikal BK-N',                  type:'asic', algo:'CryptoNight', coin:'BCN', hr:20,  hrUnit:'KH/s', watts:60,  release:'Mar 2018' },
+
   // ZEC — Equihash
   { id:'z15pro',    name:'Antminer Z15 Pro',        type:'asic', algo:'Equihash',   coin:'ZEC', hr:840,  hrUnit:'KH/s', watts:2780, release:'May 2022' },
   { id:'z15j',      name:'Antminer Z15J',           type:'asic', algo:'Equihash',   coin:'ZEC', hr:580,  hrUnit:'KH/s', watts:1500, release:'Nov 2021' },
@@ -1006,6 +1018,7 @@ const COINS = [
   { sym:'KDA',  name:'Kadena',         color:'#ED098F', cgId:'kadena' },
   { sym:'SC',   name:'Siacoin',        color:'#1ED660', cgId:'siacoin' },
   { sym:'ALEO', name:'Aleo',           color:'#5F6FFF', cgId:'aleo' },
+  { sym:'BCN',  name:'Bytecoin',       color:'#FF1A8C', cgId:'bytecoin' },
 ];
 
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
@@ -1024,6 +1037,7 @@ const NET_HR = {
   'KDA':  { perUnit: 7.2,    unit: 'TH/s' },
   'ALEO': { perUnit: 0.8,   unit: 'MH/s' },
   'ALPH': { perUnit: 0.001, unit: 'GH/s' },
+  'BCN':  { perUnit: 2000,  unit: 'KH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1432,7 +1446,7 @@ const ALGO_COINS = {
   'kHeavyHash': ['KAS'], 'Blake2b': ['CKB'], 'Eaglesong': ['CKB'],
   'Etchash': ['ETC'], 'RandomX': ['XMR'],
   'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
-  'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'],
+  'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
 };
 
 function setMinerType(type) {
