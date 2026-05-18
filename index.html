@@ -1485,6 +1485,8 @@ function buildCoinGrid(algo) {
 }
 
 function selectCoin(sym) {
+  clearTimeout(_hwCloseTimer);
+  _hwCloseTimer = null;
   addSelectedCoin = sym;
   const selectedHwId = document.getElementById('hw-select').value;
   const currentHw = HARDWARE.find(h => h.id === selectedHwId);
