@@ -1475,7 +1475,7 @@ function buildCoinGrid(algo) {
   const isLtcDoge = addSelectedCoin === 'LTC/DOGE';
   grid.innerHTML = displayItems.map(c => {
     const active = addSelectedCoin === c.sym || (c.sym === 'LTC/DOGE' && isLtcDoge);
-    return `<div class="coin-pill ${active ? 'active' : ''}" onclick="selectCoin('${c.sym}')" style="${active ? 'border-color:'+c.color+';' : ''}">
+    return `<div class="coin-pill ${active ? 'active' : ''}" onmousedown="_hwCloseTimer && clearTimeout(_hwCloseTimer)" onclick="selectCoin('${c.sym}')" style="${active ? 'border-color:'+c.color+';' : ''}">
       <div class="coin-pill-sym" style="color:${c.color};">${c.sym}</div>
       <div class="coin-pill-name">${c.name}</div>
     </div>`;
