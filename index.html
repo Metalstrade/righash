@@ -20,11 +20,11 @@
   --text:     #F9FAFB;
   --muted:    #6B7280;
   --muted2:   #9CA3AF;
-  --accent:   #10B981;
-  --accent2:  #059669;
+  --accent:   #FFFFFF;
+  --accent2:  #D1D5DB;
   --gold:     #F5A623;
   --red:      #EF4444;
-  --green:    #10B981;
+  --green:    #FFFFFF;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { overflow-x: hidden; scroll-behavior: smooth; }
@@ -91,7 +91,7 @@ nav {
 .btn-nav-accent {
   padding: 7px 18px; border-radius: 4px; font-size: 12px; font-weight: 600;
   letter-spacing: 0.04em; cursor: pointer; font-family: 'JetBrains Mono', monospace;
-  background: var(--accent); border: 1px solid var(--accent); color: #fff;
+  background: var(--accent); border: 1px solid var(--accent); color: var(--bg);
   transition: background 0.15s;
 }
 .btn-nav-accent:hover { background: var(--accent2); border-color: var(--accent2); }
@@ -153,7 +153,7 @@ nav {
 .btn-primary {
   padding: 13px 32px; border-radius: 4px; font-size: 12px; font-weight: 600;
   letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
-  font-family: 'JetBrains Mono', monospace; background: var(--accent); border: 1px solid var(--accent); color: #fff;
+  font-family: 'JetBrains Mono', monospace; background: var(--accent); border: 1px solid var(--accent); color: var(--bg);
   transition: background 0.15s, transform 0.1s;
 }
 .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); transform: translateY(-1px); }
@@ -242,7 +242,7 @@ nav {
   display: flex; align-items: center; gap: 7px;
   padding: 8px 18px; border-radius: 4px; font-size: 11px; font-weight: 600;
   letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
-  font-family: 'JetBrains Mono', monospace; background: var(--accent); border: 1px solid var(--accent); color: #fff;
+  font-family: 'JetBrains Mono', monospace; background: var(--accent); border: 1px solid var(--accent); color: var(--bg);
   transition: background 0.15s;
 }
 .btn-add-miner:hover { background: var(--accent2); border-color: var(--accent2); }
@@ -264,7 +264,7 @@ nav {
   display: flex; align-items: center; gap: 8px;
   padding: 12px 28px; border-radius: 4px; font-size: 11px; font-weight: 600;
   letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
-  font-family: 'JetBrains Mono', monospace; background: var(--accent); border: 1px solid var(--accent); color: #fff;
+  font-family: 'JetBrains Mono', monospace; background: var(--accent); border: 1px solid var(--accent); color: var(--bg);
   transition: background 0.15s, transform 0.1s; margin-top: 8px;
 }
 .btn-add-big:hover { background: var(--accent2); border-color: var(--accent2); transform: translateY(-1px); }
@@ -381,7 +381,7 @@ nav {
 .btn-form-submit {
   width: 100%; padding: 12px; border-radius: 4px; font-size: 11px; font-weight: 600;
   letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
-  font-family: 'JetBrains Mono', monospace; background: var(--accent); border: 1px solid var(--accent); color: #fff;
+  font-family: 'JetBrains Mono', monospace; background: var(--accent); border: 1px solid var(--accent); color: var(--bg);
   margin-top: 8px; transition: background 0.15s;
 }
 .btn-form-submit:hover { background: var(--accent2); border-color: var(--accent2); }
@@ -405,7 +405,7 @@ nav {
   transition: border-color 0.15s, color 0.15s, background 0.15s;
   font-family: 'Inter', sans-serif;
 }
-.type-pill.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,170,0.08); }
+.type-pill.active { border-color: var(--accent); color: var(--accent); background: rgba(255,255,255,0.08); }
 .form-select {
   width: 100%; padding: 10px 12px; border-radius: 4px;
   background: var(--bg3); border: 1px solid var(--border); color: var(--text);
@@ -432,7 +432,7 @@ nav {
   display: flex; flex-direction: column; gap: 1px;
 }
 .coin-pill:hover { border-color: var(--border2); }
-.coin-pill.active { border-color: var(--accent) !important; background: rgba(0,212,170,0.08); }
+.coin-pill.active { border-color: var(--accent) !important; background: rgba(255,255,255,0.08); }
 .coin-pill-sym { font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
 .coin-pill-name { font-size: 10px; color: var(--muted); }
 
@@ -448,7 +448,7 @@ nav {
   pointer-events: none;
 }
 .toast.show { opacity: 1; transform: translateY(0); }
-.toast.success { border-color: rgba(0,212,170,0.4); color: var(--accent); }
+.toast.success { border-color: rgba(255,255,255,0.3); color: var(--accent); }
 .toast.error { border-color: rgba(240,100,90,0.4); color: var(--red); }
 
 /* Footer */
