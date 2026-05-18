@@ -922,9 +922,21 @@ const HARDWARE = [
   { id:'rtx3080erg',name:'RTX 3080 (ERGO)',        type:'gpu',  algo:'Autolykos',  coin:'ERGO',hr:220,  hrUnit:'MH/s', watts:250, release:'Sep 2020' },
   { id:'rtx3070erg',name:'RTX 3070 (ERGO)',        type:'gpu',  algo:'Autolykos',  coin:'ERGO',hr:164,  hrUnit:'MH/s', watts:120, release:'Oct 2020' },
 
-  // ALPH — Blake3
-  { id:'a1346alph', name:'Antminer AL1 (ALPH)',    type:'asic', algo:'Blake3',     coin:'ALPH',hr:10,   hrUnit:'TH/s', watts:3500, release:'Apr 2024' },
-  { id:'rtx3080alph',name:'RTX 3080 (ALPH)',       type:'gpu',  algo:'Blake3',     coin:'ALPH',hr:2.5,  hrUnit:'GH/s', watts:220,  release:'Sep 2020' },
+  // ALPH — Blake3 (all hashrates in GH/s)
+  { id:'al1-pro',   name:'Antminer AL1 Pro (16.6TH)', type:'asic', algo:'Blake3', coin:'ALPH', hr:16600, hrUnit:'GH/s', watts:3730, release:'Sep 2024' },
+  { id:'al1',       name:'Antminer AL1 (15.6TH)',     type:'asic', algo:'Blake3', coin:'ALPH', hr:15600, hrUnit:'GH/s', watts:3510, release:'Jul 2024' },
+  { id:'al3',       name:'IceRiver AL3',               type:'asic', algo:'Blake3', coin:'ALPH', hr:15000, hrUnit:'GH/s', watts:3500, release:'Oct 2024' },
+  { id:'al-max',    name:'Goldshell AL Max',            type:'asic', algo:'Blake3', coin:'ALPH', hr:8300,  hrUnit:'GH/s', watts:3350, release:'Dec 2024' },
+  { id:'e-al1m',    name:'Goldshell E-AL1M',            type:'asic', algo:'Blake3', coin:'ALPH', hr:4400,  hrUnit:'GH/s', watts:1800, release:'Sep 2024' },
+  { id:'a40',       name:'DragonBall Miner A40',        type:'asic', algo:'Blake3', coin:'ALPH', hr:3300,  hrUnit:'GH/s', watts:1600, release:'Sep 2024' },
+  { id:'al2-lite',  name:'IceRiver AL2 Lite',           type:'asic', algo:'Blake3', coin:'ALPH', hr:2000,  hrUnit:'GH/s', watts:500,  release:'Oct 2024' },
+  { id:'al-box3',   name:'Goldshell AL-BOX III',        type:'asic', algo:'Blake3', coin:'ALPH', hr:1250,  hrUnit:'GH/s', watts:600,  release:'Sep 2024' },
+  { id:'al-box2p',  name:'Goldshell AL-BOX II Plus',    type:'asic', algo:'Blake3', coin:'ALPH', hr:1000,  hrUnit:'GH/s', watts:480,  release:'Sep 2024' },
+  { id:'al-box2pro',name:'Goldshell AL-BOX II Pro',     type:'asic', algo:'Blake3', coin:'ALPH', hr:950,   hrUnit:'GH/s', watts:460,  release:'Oct 2024' },
+  { id:'al-box2',   name:'Goldshell AL-BOX II',         type:'asic', algo:'Blake3', coin:'ALPH', hr:720,   hrUnit:'GH/s', watts:360,  release:'Jun 2024' },
+  { id:'al-box',    name:'Goldshell AL-BOX',            type:'asic', algo:'Blake3', coin:'ALPH', hr:360,   hrUnit:'GH/s', watts:180,  release:'May 2024' },
+  { id:'al0',       name:'IceRiver ALPH AL0',           type:'asic', algo:'Blake3', coin:'ALPH', hr:400,   hrUnit:'GH/s', watts:100,  release:'Aug 2024' },
+  { id:'rtx3080alph',name:'RTX 3080 (ALPH)',            type:'gpu',  algo:'Blake3', coin:'ALPH', hr:2.5,   hrUnit:'GH/s', watts:220,  release:'Sep 2020' },
 
   // KDA — Blake2S
   { id:'ka3-173',   name:'Antminer KA3 (173TH)',    type:'asic', algo:'Blake2S', coin:'KDA', hr:173,  hrUnit:'TH/s', watts:3287, release:'Jun 2024' },
@@ -1011,6 +1023,7 @@ const NET_HR = {
   'ZEC':  { perUnit: 9.8e-5,  unit: 'KSol/s' },
   'KDA':  { perUnit: 7.2,    unit: 'TH/s' },
   'ALEO': { perUnit: 0.8,   unit: 'MH/s' },
+  'ALPH': { perUnit: 0.001, unit: 'GH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
