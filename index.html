@@ -944,6 +944,21 @@ const HARDWARE = [
   { id:'kd-box-pro',name:'Goldshell KD-BOX Pro',     type:'asic', algo:'Blake2S', coin:'KDA', hr:2.6,  hrUnit:'TH/s', watts:230,  release:'Mar 2022' },
   { id:'kd-box',    name:'Goldshell KD-BOX',         type:'asic', algo:'Blake2S', coin:'KDA', hr:1.6,  hrUnit:'TH/s', watts:205,  release:'May 2021' },
 
+  // ALEO — zkSNARK
+  { id:'ae3',       name:'IceRiver ALEO AE3',       type:'asic', algo:'zkSNARK', coin:'ALEO', hr:2000, hrUnit:'MH/s', watts:3400, release:'Nov 2025' },
+  { id:'ae-max2',   name:'Goldshell AE Max II',      type:'asic', algo:'zkSNARK', coin:'ALEO', hr:540,  hrUnit:'MH/s', watts:3200, release:'Aug 2025' },
+  { id:'ae-max',    name:'Goldshell AE Max',         type:'asic', algo:'zkSNARK', coin:'ALEO', hr:360,  hrUnit:'MH/s', watts:3300, release:'May 2025' },
+  { id:'ae2',       name:'IceRiver ALEO AE2',        type:'asic', algo:'zkSNARK', coin:'ALEO', hr:720,  hrUnit:'MH/s', watts:1300, release:'Jul 2025' },
+  { id:'e-ae1m',    name:'Goldshell E-AE1M',         type:'asic', algo:'zkSNARK', coin:'ALEO', hr:230,  hrUnit:'MH/s', watts:2000, release:'Apr 2025' },
+  { id:'ae-box2',   name:'Goldshell AE-BOX II',      type:'asic', algo:'zkSNARK', coin:'ALEO', hr:54,   hrUnit:'MH/s', watts:530,  release:'Mar 2025' },
+  { id:'ae-box-pro',name:'Goldshell AE-BOX Pro',     type:'asic', algo:'zkSNARK', coin:'ALEO', hr:44,   hrUnit:'MH/s', watts:460,  release:'Dec 2024' },
+  { id:'ae-box',    name:'Goldshell AE-BOX',         type:'asic', algo:'zkSNARK', coin:'ALEO', hr:37,   hrUnit:'MH/s', watts:360,  release:'Feb 2025' },
+  { id:'ae1l-300',  name:'IceRiver ALEO AE1 Lite (300MH)', type:'asic', algo:'zkSNARK', coin:'ALEO', hr:300, hrUnit:'MH/s', watts:500, release:'Apr 2025' },
+  { id:'ae1l-250',  name:'IceRiver ALEO AE1 Lite (250MH)', type:'asic', algo:'zkSNARK', coin:'ALEO', hr:250, hrUnit:'MH/s', watts:500, release:'Jun 2025' },
+  { id:'ae0',       name:'IceRiver ALEO AE0',        type:'asic', algo:'zkSNARK', coin:'ALEO', hr:60,   hrUnit:'MH/s', watts:100,  release:'Mar 2025' },
+  { id:'ae-card',   name:'Goldshell AE Card',        type:'asic', algo:'zkSNARK', coin:'ALEO', hr:5.5,  hrUnit:'MH/s', watts:65,   release:'Mar 2025' },
+  { id:'ae-byte',   name:'Goldshell Byte',           type:'asic', algo:'zkSNARK', coin:'ALEO', hr:5.5,  hrUnit:'MH/s', watts:140,  release:'Mar 2025' },
+
   // ZEC — Equihash
   { id:'z15pro',    name:'Antminer Z15 Pro',        type:'asic', algo:'Equihash',   coin:'ZEC', hr:840,  hrUnit:'KH/s', watts:2780, release:'May 2022' },
   { id:'z15j',      name:'Antminer Z15J',           type:'asic', algo:'Equihash',   coin:'ZEC', hr:580,  hrUnit:'KH/s', watts:1500, release:'Nov 2021' },
@@ -978,6 +993,7 @@ const COINS = [
   { sym:'VTC',  name:'Vertcoin',       color:'#1B5E20', cgId:'vertcoin' },
   { sym:'KDA',  name:'Kadena',         color:'#ED098F', cgId:'kadena' },
   { sym:'SC',   name:'Siacoin',        color:'#1ED660', cgId:'siacoin' },
+  { sym:'ALEO', name:'Aleo',           color:'#5F6FFF', cgId:'aleo' },
 ];
 
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
@@ -994,6 +1010,7 @@ const NET_HR = {
   'ERGO': { perUnit: 3.6e-4,  unit: 'MH/s' },
   'ZEC':  { perUnit: 9.8e-5,  unit: 'KSol/s' },
   'KDA':  { perUnit: 7.2,    unit: 'TH/s' },
+  'ALEO': { perUnit: 0.8,   unit: 'MH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1402,7 +1419,7 @@ const ALGO_COINS = {
   'kHeavyHash': ['KAS'], 'Blake2b': ['CKB'], 'Eaglesong': ['CKB'],
   'Etchash': ['ETC'], 'RandomX': ['XMR'],
   'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
-  'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'],
+  'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'],
 };
 
 function setMinerType(type) {
