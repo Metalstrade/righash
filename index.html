@@ -1336,6 +1336,10 @@ const HARDWARE = [
   { id:'mars-h1',   name:'Hummer Miner Mars H1',    type:'asic', algo:'Blake2b-HNS', coin:'HNS', hr:88,   hrUnit:'GH/s', watts:2800, release:'Jul 2020' },
   { id:'hs1-plus',  name:'Goldshell HS1-PLUS',      type:'asic', algo:'Blake2b-HNS', coin:'HNS', hr:105,  hrUnit:'GH/s', watts:115,  release:'Oct 2020' },
 
+  // INI — VersaHash
+  { id:'inibox-pro', name:'Pinecone Matches INIBOX Pro', type:'asic', algo:'VersaHash', coin:'INI', hr:2400, hrUnit:'MH/s', watts:1280, release:'Mar 2026' },
+  { id:'inibox',     name:'Pinecone Matches INIBOX',     type:'asic', algo:'VersaHash', coin:'INI', hr:850,  hrUnit:'MH/s', watts:500,  release:'Jul 2025' },
+
   // GRIN — Cuckatoo32
   { id:'ipollo-g1',     name:'iPollo G1',               type:'asic', algo:'Cuckatoo32', coin:'GRIN', hr:36,  hrUnit:'GPS', watts:2800, release:'Dec 2020' },
   { id:'ipollo-g1mini', name:'iPollo G1 Mini',           type:'asic', algo:'Cuckatoo32', coin:'GRIN', hr:1.2, hrUnit:'GPS', watts:120,  release:'Jan 2021' },
@@ -1370,6 +1374,7 @@ const COINS = [
   { sym:'DCR',  name:'Decred',         color:'#2ED6A1', cgId:'decred' },
   { sym:'GRIN', name:'Grin',           color:'#FFD700', cgId:'grin' },
   { sym:'GRS',  name:'Groestlcoin',    color:'#6B9DB5', cgId:'groestlcoin' },
+  { sym:'INI',  name:'Initverse',      color:'#7C3AED', cgId:'initverse' },
 ];
 
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
@@ -1394,6 +1399,7 @@ const NET_HR = {
   'GRIN': { perUnit: 0.002,  unit: 'GPS' },
   'GRS':  { perUnit: 0.005,  unit: 'GH/s' },
   'HNS':  { perUnit: 0.0001, unit: 'GH/s' },
+  'INI':  { perUnit: 0.0005, unit: 'MH/s' },
 };
 
 // Live per-unit values from WhatToMine (overrides NET_HR.perUnit when loaded)
@@ -1806,7 +1812,7 @@ const ALGO_COINS = {
   'KawPow': ['RVN'], 'Autolykos': ['ERGO'],
   'Equihash': ['ZEC'], 'Blake3': ['ALPH'], 'Blake2S': ['KDA'], 'zkSNARK': ['ALEO'], 'CryptoNight': ['BCN'],
   'X11': ['DASH'], 'Blake256R14': ['DCR'], 'Cuckatoo32': ['GRIN'], 'Groestl': ['GRS'],
-  'Blake2b-HNS': ['HNS'],
+  'Blake2b-HNS': ['HNS'], 'VersaHash': ['INI'],
 };
 // Reverse map: coin symbol → primary algorithm label for display
 const COIN_ALGO = {};
