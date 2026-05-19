@@ -2092,7 +2092,7 @@ function onSignIn(user) {
   currentUser = user;
   document.getElementById('nav-signin-btn').style.display = 'none';
   document.getElementById('nav-signup-btn').style.display = 'none';
-  document.getElementById('user-menu-wrap').style.display = '';
+  document.getElementById('user-menu-wrap').style.display = 'flex';
   const email = user.email || '';
   document.getElementById('nav-user-email').textContent = email.split('@')[0];
   document.getElementById('user-menu-email-full').textContent = email;
