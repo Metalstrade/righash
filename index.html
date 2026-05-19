@@ -1169,13 +1169,23 @@ footer {
       <div class="coin-grid" id="coin-grid"></div>
     </div>
 
-    <div class="form-field" style="margin-top:16px;">
-      <label class="form-label">Electricity Rate (USD/kWh)</label>
-      <div class="elec-ctrl">
-        <button class="elec-btn" onmousedown="holdStart(() => addElecStep(-1))" onmouseup="holdStop()" onmouseleave="holdStop()" ontouchstart="holdStart(() => addElecStep(-1));event.preventDefault()" ontouchend="holdStop()">−</button>
-        <div class="elec-val" id="add-elec-val">0.100</div>
-        <button class="elec-btn" onmousedown="holdStart(() => addElecStep(+1))" onmouseup="holdStop()" onmouseleave="holdStop()" ontouchstart="holdStart(() => addElecStep(+1));event.preventDefault()" ontouchend="holdStop()">+</button>
-        <span style="font-size:11px;color:var(--muted);margin-left:8px;">default 0.10 USD/kWh</span>
+    <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;">
+      <div class="form-field" style="flex:1;min-width:160px;margin-top:0;">
+        <label class="form-label">Electricity Rate (USD/kWh)</label>
+        <div class="elec-ctrl">
+          <button class="elec-btn" onmousedown="holdStart(() => addElecStep(-1))" onmouseup="holdStop()" onmouseleave="holdStop()" ontouchstart="holdStart(() => addElecStep(-1));event.preventDefault()" ontouchend="holdStop()">−</button>
+          <div class="elec-val" id="add-elec-val">0.100</div>
+          <button class="elec-btn" onmousedown="holdStart(() => addElecStep(+1))" onmouseup="holdStop()" onmouseleave="holdStop()" ontouchstart="holdStart(() => addElecStep(+1));event.preventDefault()" ontouchend="holdStop()">+</button>
+        </div>
+      </div>
+      <div class="form-field" style="min-width:120px;margin-top:0;">
+        <label class="form-label">Quantity</label>
+        <div class="elec-ctrl">
+          <button class="elec-btn" onmousedown="holdStart(() => addQtyStep(-1))" onmouseup="holdStop()" onmouseleave="holdStop()" ontouchstart="holdStart(() => addQtyStep(-1));event.preventDefault()" ontouchend="holdStop()">−</button>
+          <div class="elec-val" id="add-qty-val" style="min-width:36px;">1</div>
+          <button class="elec-btn" onmousedown="holdStart(() => addQtyStep(+1))" onmouseup="holdStop()" onmouseleave="holdStop()" ontouchstart="holdStart(() => addQtyStep(+1));event.preventDefault()" ontouchend="holdStop()">+</button>
+          <span style="font-size:11px;color:var(--muted);margin-left:6px;">units</span>
+        </div>
       </div>
     </div>
 
@@ -2131,6 +2141,7 @@ let userMiners = [];
 let coinPrices = {};
 let addMinerType = 'asic';
 let addElecRate = 0.10;
+let addQuantity = 1;
 let addSelectedCoin = null;
 
 // ── TICKER ──
@@ -3131,8 +3142,10 @@ function updateStats() {
 // ── ADD MINER MODAL ──
 function openAddMiner() {
   addElecRate = userDefaultElec;
+  addQuantity = 1;
   addSelectedCoin = null;
   document.getElementById('add-elec-val').textContent = addElecRate.toFixed(3);
+  document.getElementById('add-qty-val').textContent = '1';
   document.getElementById('add-error').style.display = 'none';
   document.getElementById('hw-search').value = '';
   document.getElementById('hw-list').classList.remove('open');
@@ -3325,6 +3338,10 @@ function addElecStep(dir) {
   addElecRate = Math.max(0.001, Math.min(9.999, Math.round((addElecRate + step) * 1000) / 1000));
   document.getElementById('add-elec-val').textContent = addElecRate.toFixed(3);
 }
+function addQtyStep(dir) {
+  addQuantity = Math.max(1, Math.min(100, addQuantity + dir));
+  document.getElementById('add-qty-val').textContent = addQuantity;
+}
 function elecStep(id, dir) {
   const m = userMiners.find(x => x.id === id);
   if (!m) return;
@@ -3372,7 +3389,7 @@ async function submitAddMiner() {
     power_watts:     hw.watts,
     coin:            coinToStore,
     electricity_rate: addElecRate,
-    quantity:        1,
+    quantity:        addQuantity,
   }).select().single();
 
   if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
