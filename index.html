@@ -1947,7 +1947,7 @@ const COINS = [
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
 // Live values fetched from WhatToMine via edge function and stored in wtmPerUnit
 const NET_HR = {
-  'BTC':  { perUnit: 4.6e-7,  unit: 'TH/s' },
+  'BTC':  { perUnit: 5.0e-7,  unit: 'TH/s' },  // ~900 EH/s network, 3.125 BTC/block
   'LTC':  { perUnit: 1.26e-3, unit: 'GH/s' },
   'DOGE': { perUnit: 4.46,    unit: 'GH/s' },
   'KAS':  { perUnit: 7.83,    unit: 'TH/s' },
@@ -1958,9 +1958,9 @@ const NET_HR = {
   'ERGO': { perUnit: 3.6e-4,  unit: 'MH/s' },
   'ZEC':  { perUnit: 9.8e-5,  unit: 'KSol/s' },
   'ZEN':  { perUnit: 9.8e-5,  unit: 'KSol/s' },
-  'KDA':  { perUnit: 0.15,   unit: 'TH/s' },
+  'KDA':  { perUnit: 0.40,   unit: 'TH/s' },  // ~200 PH/s network, ~126k KDA/day
   'ALEO': { perUnit: 0.8,   unit: 'MH/s' },
-  'ALPH': { perUnit: 0.001, unit: 'GH/s' },
+  'ALPH': { perUnit: 0.05,  unit: 'GH/s' },  // typical ASIC/GPU earnings ~0.05 ALPH/GH/day
   'BCN':  { perUnit: 2000,  unit: 'KH/s' },
   'DASH': { perUnit: 0.0001, unit: 'GH/s' },
   'DCR':  { perUnit: 0.0005, unit: 'TH/s' },
@@ -2037,22 +2037,29 @@ async function fetchNhProfitability() {
 async function fetchWtmProfitability() {
   try {
     const coins = Object.keys(WTM_COINS);
+    // Stagger requests by 400ms to avoid codetabs rate limiting
     const results = await Promise.allSettled(
-      coins.map(sym => {
-        const id = WTM_COINS[sym].id;
-        const url = `${WTM_BASE}/coins/${id}.json?hr=1&p=0&fee=0&cost=0&cost_currency=USD`;
-        return fetch(url)
-          .then(r => r.ok ? r.json() : null)
-          .then(d => ({ sym, d }));
-      })
+      coins.map((sym, i) =>
+        new Promise(res => setTimeout(res, i * 400)).then(() => {
+          const id = WTM_COINS[sym].id;
+          // Encode full WTM URL so codetabs forwards all query params correctly
+          const wtmUrl = encodeURIComponent(`https://whattomine.com/coins/${id}.json?hr=1&p=0&fee=0&cost=0&cost_currency=USD`);
+          return fetch(`https://api.codetabs.com/v1/proxy?quest=${wtmUrl}`)
+            .then(r => r.ok ? r.json() : null)
+            .then(d => ({ sym, d }));
+        })
+      )
     );
     results.forEach(r => {
       if (r.status !== 'fulfilled' || !r.value?.d) return;
       const { sym, d } = r.value;
-      // WhatToMine returns estimated_rewards for hr=1. Apply scale to match miner's stored unit.
       if (d.estimated_rewards) {
         const scale = WTM_COINS[sym]?.scale || 1;
-        wtmPerUnit[sym] = parseFloat(d.estimated_rewards) * scale;
+        const val = parseFloat(d.estimated_rewards) * scale;
+        if (val > 0) {
+          wtmPerUnit[sym] = val;
+          console.debug(`WTM ${sym}: ${val} per unit/day`);
+        }
       }
     });
     if (userMiners.length) renderMiners();
