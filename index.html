@@ -2319,9 +2319,7 @@ function openSettings() {
   // Pre-fill current values
   const email = currentUser?.email || '';
   document.getElementById('set-cur-email').textContent = email;
-  document.getElementById('set-new-email').value = '';
   document.getElementById('set-new-password').value = '';
-  document.getElementById('set-email-msg').textContent = '';
   document.getElementById('set-password-msg').textContent = '';
   document.getElementById('set-elec-rate').value = userDefaultElec.toFixed(3);
   // Currency toggle
