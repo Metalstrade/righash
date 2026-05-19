@@ -27,6 +27,42 @@
   --red:      #EF4444;
   --green:    #FFFFFF;
 }
+[data-theme="light"] {
+  --bg:      #F8F8F8;
+  --bg2:     #FFFFFF;
+  --bg3:     #F0F0F0;
+  --bg4:     #E8E8E8;
+  --border:  #DEDEDE;
+  --border2: #C8C8C8;
+  --text:    #111111;
+  --muted:   #999999;
+  --muted2:  #666666;
+  --accent:  #000000;
+  --accent2: #222222;
+  --gold:    #D48A00;
+  --red:     #DC2626;
+  --green:   #000000;
+}
+/* user dropdown */
+#user-menu-wrap { position: relative; display: none; }
+#user-menu {
+  position: absolute; top: calc(100% + 6px); right: 0;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  min-width: 180px; padding: 4px; z-index: 999;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.user-menu-header {
+  padding: 10px 12px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px;
+}
+.user-menu-email { font-size: 11px; color: var(--muted2); word-break: break-all; }
+.user-menu-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 5px; cursor: pointer;
+  font-size: 13px; color: var(--text); transition: background 0.1s;
+}
+.user-menu-item:hover { background: var(--bg4); }
+.user-menu-item.danger { color: var(--red); margin-top: 4px; border-top: 1px solid var(--border); padding-top: 10px; }
+.user-menu-item.danger:hover { background: var(--bg4); }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { overflow-x: hidden; scroll-behavior: smooth; }
 body {
@@ -704,10 +740,25 @@ footer {
   <div class="nav-spacer"></div>
   <button class="btn-nav-outline" id="nav-signin-btn" onclick="openAuthModal('signin')">Sign In</button>
   <button class="btn-nav-accent" id="nav-signup-btn" onclick="openAuthModal('signup')">Get Started</button>
-  <button id="nav-user-btn" style="display:none;" onclick="openUserMenu()">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-    <span id="nav-user-email">—</span>
-  </button>
+  <div id="user-menu-wrap">
+    <button id="nav-user-btn" onclick="toggleUserMenu()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span id="nav-user-email">—</span>
+    </button>
+    <div id="user-menu" style="display:none;">
+      <div class="user-menu-header">
+        <div class="user-menu-email" id="user-menu-email-full">—</div>
+      </div>
+      <div class="user-menu-item" onclick="toggleTheme()">
+        <svg id="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <span id="theme-label">Light mode</span>
+      </div>
+      <div class="user-menu-item danger" onclick="doSignOut()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </div>
+    </div>
+  </div>
 </nav>
 
 <!-- ── LANDING ── -->
@@ -1978,8 +2029,39 @@ async function submitSignUp() {
   document.querySelector('#panel-signup .btn-form-submit').style.display = 'none';
 }
 
-function openUserMenu() {
-  if (confirm('Sign out of Righash?')) sb.auth.signOut();
+function toggleUserMenu() {
+  const menu = document.getElementById('user-menu');
+  menu.style.display = menu.style.display === 'none' ? '' : 'none';
+}
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('user-menu-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('user-menu').style.display = 'none';
+  }
+});
+
+function doSignOut() {
+  document.getElementById('user-menu').style.display = 'none';
+  sb.auth.signOut();
+}
+
+let _theme = localStorage.getItem('rh_theme') || 'dark';
+function initTheme() {
+  applyTheme(_theme);
+}
+function applyTheme(t) {
+  _theme = t;
+  document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : '');
+  const label = document.getElementById('theme-label');
+  const icon  = document.getElementById('theme-icon');
+  if (label) label.textContent = t === 'light' ? 'Dark mode' : 'Light mode';
+  if (icon)  icon.innerHTML = t === 'light'
+    ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
+    : '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+  localStorage.setItem('rh_theme', t);
+}
+function toggleTheme() {
+  applyTheme(_theme === 'light' ? 'dark' : 'light');
 }
 
 // ── MATH CAPTCHA ──
@@ -2010,9 +2092,10 @@ function onSignIn(user) {
   currentUser = user;
   document.getElementById('nav-signin-btn').style.display = 'none';
   document.getElementById('nav-signup-btn').style.display = 'none';
-  document.getElementById('nav-user-btn').style.display = '';
+  document.getElementById('user-menu-wrap').style.display = '';
   const email = user.email || '';
   document.getElementById('nav-user-email').textContent = email.split('@')[0];
+  document.getElementById('user-menu-email-full').textContent = email;
   document.getElementById('landing').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   document.getElementById('toolbar-right').style.display = 'flex';
@@ -2034,7 +2117,7 @@ function onSignOut() {
   currentUser = null;
   document.getElementById('nav-signin-btn').style.display = '';
   document.getElementById('nav-signup-btn').style.display = '';
-  document.getElementById('nav-user-btn').style.display = 'none';
+  document.getElementById('user-menu-wrap').style.display = 'none';
   document.getElementById('landing').style.display = '';
   document.getElementById('dashboard').style.display = 'none';
   userMiners = [];
@@ -2715,6 +2798,7 @@ function showToast(msg, type) {
 }
 
 // ── INIT ──
+initTheme();
 // Wait for all three price sources before snapshotting, so the saved value
 // uses live WTM rates rather than the stale NET_HR fallbacks.
 Promise.allSettled([initTicker(), fetchNhProfitability(), fetchWtmProfitability()])
