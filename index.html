@@ -213,12 +213,27 @@ nav {
 .dash-header {
   padding: 28px 24px 0;
   max-width: 1400px; margin: 0 auto;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
 }
+.dash-header-left { min-width: 0; }
 .dash-greeting {
   font-family: 'JetBrains Mono', monospace;
   font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 4px;
 }
 .dash-sub { font-size: 13px; color: var(--muted); }
+.period-toggle {
+  display: none; align-items: center; gap: 2px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 3px;
+  flex-shrink: 0; margin-top: 4px;
+}
+.period-btn {
+  padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em; cursor: pointer; font-family: 'JetBrains Mono', monospace;
+  background: none; border: none; color: var(--muted);
+  transition: background 0.12s, color 0.12s;
+}
+.period-btn:hover { color: var(--text); }
+.period-btn.active { background: var(--bg4); color: var(--text); }
 .dash-stats {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 12px; padding: 20px 24px;
@@ -758,8 +773,15 @@ footer {
 <!-- ── DASHBOARD ── -->
 <div id="dashboard">
   <div class="dash-header">
-    <div class="dash-greeting">Good morning, <span id="dash-user-name">Miner</span></div>
-    <div class="dash-sub" id="dash-date">—</div>
+    <div class="dash-header-left">
+      <div class="dash-greeting">Good morning, <span id="dash-user-name">Miner</span></div>
+      <div class="dash-sub" id="dash-date">—</div>
+    </div>
+    <div class="period-toggle" id="period-toggle">
+      <button class="period-btn active" data-period="day"   onclick="setPeriod('day')">D</button>
+      <button class="period-btn"        data-period="month" onclick="setPeriod('month')">M</button>
+      <button class="period-btn"        data-period="year"  onclick="setPeriod('year')">Y</button>
+    </div>
   </div>
   <div class="dash-stats">
     <div class="stat-card">
@@ -773,7 +795,7 @@ footer {
       <div class="stat-card-sub">per day at current rates</div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-label">Net Profit / Day</div>
+      <div class="stat-card-label" id="stat-net-label">Net Profit / Day</div>
       <div class="stat-card-val" id="stat-net">$0.00</div>
       <div class="stat-card-sub">after electricity costs</div>
     </div>
@@ -1982,6 +2004,7 @@ function onSignIn(user) {
   document.getElementById('toolbar-right').style.display = 'flex';
   document.getElementById('section-title-guest').style.display = 'none';
   document.getElementById('section-tabs').style.display = 'flex';
+  document.getElementById('period-toggle').style.display = 'flex';
   updateViewToggle();
   const name = (user.user_metadata?.full_name || email.split('@')[0] || 'Miner');
   document.getElementById('dash-user-name').textContent = name;
@@ -2052,6 +2075,19 @@ function updateViewToggle() {
   const compact = viewMode === 'compact';
   document.getElementById('view-icon-compact').style.display  = compact ? 'none'  : 'block';
   document.getElementById('view-icon-expanded').style.display = compact ? 'block' : 'none';
+}
+
+// ── PROFIT PERIOD TOGGLE ──
+let profitPeriod = 'day';
+const PERIOD_MULT  = { day: 1, month: 30, year: 365 };
+const PERIOD_LABEL = { day: '/day', month: '/mo', year: '/yr' };
+const PERIOD_STAT_LABEL = { day: 'Net Profit / Day', month: 'Net Profit / Month', year: 'Net Profit / Year' };
+
+function setPeriod(p) {
+  profitPeriod = p;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.toggle('active', b.dataset.period === p));
+  document.getElementById('stat-net-label').textContent = PERIOD_STAT_LABEL[p];
+  renderMiners();
 }
 
 // ── SECTION TOGGLE (Miners / Stats) ──
@@ -2323,7 +2359,10 @@ function renderMiners() {
 
   grid.innerHTML = userMiners.map(m => {
     const coin = COINS.find(c => c.sym === m.coin) || { sym: m.coin, color: '#6B7A8D', name: m.coin };
-    const { gross, elecCost, net } = calcDailyEarnings(m);
+    const { gross: grossDay, elecCost: elecDay, net: netDay } = calcDailyEarnings(m);
+    const mult = PERIOD_MULT[profitPeriod] || 1;
+    const pLabel = PERIOD_LABEL[profitPeriod];
+    const gross = grossDay * mult, elecCost = elecDay * mult, net = netDay * mult;
     const netCls = net >= 0 ? 'positive' : 'negative';
     const hrDisplay = esc(m.hashrate + ' ' + (m.hashrate_unit || ''));
     const hasNotes = !!(m.notes || m.serial_number);
@@ -2342,7 +2381,7 @@ function renderMiners() {
           ${qty > 1 ? `<span class="compact-qty">×${qty}</span>` : ''}
         </div>
         <div class="compact-earn ${netCls}">
-          ${net >= 0 ? '+' : ''}$${net.toFixed(2)}<span class="compact-earn-sub">/day</span>
+          ${net >= 0 ? '+' : ''}$${net.toFixed(2)}<span class="compact-earn-sub">${pLabel}</span>
         </div>
         <div class="compact-actions">
           <button class="btn-miner-note ${hasNotes ? 'has-notes' : ''}" onclick="openNotes('${m.id}')" title="Notes">${NOTE_ICON}</button>
@@ -2388,7 +2427,7 @@ function renderMiners() {
         </div>
       </div>
       <div class="miner-earnings">
-        <div class="miner-earn-net ${netCls}">${net >= 0 ? '+' : ''}$${net.toFixed(2)}/day</div>
+        <div class="miner-earn-net ${netCls}">${net >= 0 ? '+' : ''}$${net.toFixed(2)}${pLabel}</div>
         <div class="miner-earn-gross">Gross $${gross.toFixed(2)}</div>
         <div class="miner-earn-gross" style="color:var(--red);">Elec $${elecCost.toFixed(2)}</div>
       </div>
@@ -2411,12 +2450,13 @@ function updateStats() {
     totalWatts += m.power_watts * qty;
     totalUnits += qty;
   });
-  document.getElementById('stat-daily').textContent = '$' + totalGross.toFixed(2);
+  const mult = PERIOD_MULT[profitPeriod] || 1;
+  document.getElementById('stat-daily').textContent = '$' + (totalGross * mult).toFixed(2);
   const netEl = document.getElementById('stat-net');
-  netEl.textContent = (totalNet >= 0 ? '+' : '') + '$' + totalNet.toFixed(2);
+  netEl.textContent = (totalNet >= 0 ? '+' : '') + '$' + (totalNet * mult).toFixed(2);
   netEl.style.color = totalNet >= 0 ? '#10B981' : 'var(--red)';
   document.getElementById('stat-power').textContent = totalWatts >= 1000 ? (totalWatts/1000).toFixed(2) + ' kW' : totalWatts + ' W';
-  document.getElementById('stat-elec').textContent = '-$' + (totalGross - totalNet).toFixed(2);
+  document.getElementById('stat-elec').textContent = '-$' + ((totalGross - totalNet) * mult).toFixed(2);
   document.getElementById('stat-count').textContent = totalUnits;
 }
 
