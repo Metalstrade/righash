@@ -2127,7 +2127,7 @@ function renderMiners() {
           <span class="miner-chip" style="color:${safeColor};border-color:${safeColor}40;">${esc(coin.sym)}</span>
           <span class="miner-name">${esc(m.miner_name)}</span>
           <span class="miner-type-badge">${esc((m.miner_type || '').toUpperCase())}</span>
-          ${m.serial_number ? `<span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;">#${esc(m.serial_number)}</span>` : ''}
+          ${(() => { try { const a = JSON.parse(m.serial_number||'[]'); const s = Array.isArray(a) ? a.filter(x=>x) : []; return s.length === 1 ? `<span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;">#${esc(s[0])}</span>` : s.length > 1 ? `<span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;">${s.length} serials</span>` : ''; } catch(e){ return m.serial_number ? `<span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;">#${esc(m.serial_number)}</span>` : ''; } })()}
         </div>
         <div class="miner-meta">${esc(m.algorithm)} · ${esc(m.coin)}</div>
       </div>
