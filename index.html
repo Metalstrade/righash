@@ -1021,7 +1021,21 @@ footer {
         <p id="si-captcha-err" style="display:none; margin:6px 0 0; font-size:11px; color:var(--red); font-family:'Inter',sans-serif;">Napačen odgovor. Poskusi znova.</p>
       </div>
       <button class="btn-form-submit" id="si-btn" onclick="submitSignIn()">Sign In</button>
+      <div class="auth-switch" style="margin-bottom:6px;"><a onclick="showForgotPassword()">Forgot password?</a></div>
       <div class="auth-switch">Don't have an account? <a onclick="switchAuthTab('signup')">Create one free</a></div>
+    </div>
+
+    <!-- Forgot password panel -->
+    <div id="panel-forgot" style="display:none;">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Enter your email and we'll send you a reset link.</div>
+      <div class="form-field">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="fp-email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')submitForgotPassword()" />
+      </div>
+      <div class="form-error" id="fp-error"></div>
+      <div class="settings-msg" id="fp-msg"></div>
+      <button class="btn-form-submit" id="fp-btn" onclick="submitForgotPassword()">Send Reset Link</button>
+      <div class="auth-switch"><a onclick="showSignIn()">← Back to Sign In</a></div>
     </div>
 
     <!-- Sign Up -->
@@ -1139,6 +1153,28 @@ footer {
   </div>
 </div>
 
+<!-- ── PASSWORD RECOVERY ── -->
+<div class="modal-overlay" id="recovery-overlay">
+  <div class="modal-box">
+    <div class="modal-logo">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:28px;height:28px;"><polygon points="100,20 180,60 180,140 100,180 20,140 20,60" fill="none" stroke="currentColor" stroke-width="12"/><polygon points="100,50 155,80 155,130 100,155 45,130 45,80" fill="currentColor" opacity="0.15"/><line x1="100" y1="20" x2="100" y2="55" stroke="currentColor" stroke-width="8"/><line x1="100" y1="145" x2="100" y2="180" stroke="currentColor" stroke-width="8"/></svg>
+      <span class="modal-logo-text">Set New Password</span>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Choose a new password for your account.</div>
+    <div class="form-field">
+      <label class="form-label">New Password</label>
+      <input class="form-input" type="password" id="rec-password" placeholder="Min. 6 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter')submitRecovery()" />
+    </div>
+    <div class="form-field">
+      <label class="form-label">Confirm Password</label>
+      <input class="form-input" type="password" id="rec-password2" placeholder="Repeat password" autocomplete="new-password" onkeydown="if(event.key==='Enter')submitRecovery()" />
+    </div>
+    <div class="form-error" id="rec-error"></div>
+    <div class="settings-msg" id="rec-msg"></div>
+    <button class="btn-form-submit" id="rec-btn" onclick="submitRecovery()">Set Password</button>
+  </div>
+</div>
+
 <!-- ── SETTINGS MODAL ── -->
 <div class="modal-overlay" id="settings-overlay" onclick="if(event.target===this)closeSettings()">
   <div class="settings-box">
@@ -1152,23 +1188,15 @@ footer {
     <!-- Account tab -->
     <div id="spanel-account">
       <div class="settings-section">
-        <div class="settings-section-title">Email</div>
+        <div class="settings-section-title">Account</div>
         <div class="form-field" style="margin-bottom:8px;">
-          <label class="form-label">Current</label>
+          <label class="form-label">Email</label>
           <div id="set-cur-email" style="font-size:13px;color:var(--muted2);padding:4px 0;"></div>
         </div>
-        <div class="form-field" style="margin-bottom:8px;">
-          <label class="form-label">New email</label>
-          <div class="settings-row">
-            <input type="email" id="set-new-email" class="form-input" placeholder="new@email.com" autocomplete="off">
-            <button class="btn-settings-save" onclick="saveEmail()">Save</button>
-          </div>
-        </div>
-        <div class="settings-msg" id="set-email-msg"></div>
       </div>
 
       <div class="settings-section">
-        <div class="settings-section-title">Password</div>
+        <div class="settings-section-title">Change Password</div>
         <div class="form-field" style="margin-bottom:8px;">
           <label class="form-label">New password</label>
           <div class="settings-row">
@@ -2108,8 +2136,59 @@ function closeAuthModal() {
 function switchAuthTab(tab) {
   document.getElementById('panel-signin').style.display = tab === 'signin' ? '' : 'none';
   document.getElementById('panel-signup').style.display = tab === 'signup' ? '' : 'none';
+  document.getElementById('panel-forgot').style.display  = tab === 'forgot'  ? '' : 'none';
   document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
   document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+  // Hide tabs row when on forgot panel
+  document.querySelector('.auth-tabs').style.display = tab === 'forgot' ? 'none' : '';
+}
+
+function showForgotPassword() {
+  document.getElementById('fp-email').value = document.getElementById('si-email').value || '';
+  document.getElementById('fp-error').style.display = 'none';
+  document.getElementById('fp-msg').textContent = '';
+  switchAuthTab('forgot');
+}
+function showSignIn() {
+  switchAuthTab('signin');
+}
+
+async function submitForgotPassword() {
+  const btn = document.getElementById('fp-btn');
+  const err = document.getElementById('fp-error');
+  const msg = document.getElementById('fp-msg');
+  const email = document.getElementById('fp-email').value.trim();
+  if (!email) { err.textContent = 'Enter your email.'; err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Sending…';
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname
+  });
+  btn.disabled = false; btn.textContent = 'Send Reset Link';
+  if (error) { err.textContent = error.message; err.style.display = 'block'; }
+  else { msg.className = 'settings-msg ok'; msg.textContent = 'Reset link sent — check your inbox.'; }
+}
+
+async function submitRecovery() {
+  const btn = document.getElementById('rec-btn');
+  const err = document.getElementById('rec-error');
+  const msg = document.getElementById('rec-msg');
+  const pw  = document.getElementById('rec-password').value;
+  const pw2 = document.getElementById('rec-password2').value;
+  err.style.display = 'none';
+  if (pw.length < 6) { err.textContent = 'Minimum 6 characters.'; err.style.display = 'block'; return; }
+  if (pw !== pw2)    { err.textContent = 'Passwords do not match.'; err.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const { error } = await sb.auth.updateUser({ password: pw });
+  btn.disabled = false; btn.textContent = 'Set Password';
+  if (error) { err.textContent = error.message; err.style.display = 'block'; }
+  else {
+    msg.className = 'settings-msg ok'; msg.textContent = 'Password updated!';
+    setTimeout(() => {
+      document.getElementById('recovery-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }, 1500);
+  }
 }
 
 async function submitSignIn() {
@@ -2285,15 +2364,7 @@ function selectDefaultPeriod(p) {
     b.classList.toggle('active', b.dataset.p === p));
 }
 
-async function saveEmail() {
-  const val = document.getElementById('set-new-email').value.trim();
-  const msg = document.getElementById('set-email-msg');
-  if (!val) { msg.className = 'settings-msg err'; msg.textContent = 'Enter a new email.'; return; }
-  msg.className = 'settings-msg'; msg.textContent = 'Saving…';
-  const { error } = await sb.auth.updateUser({ email: val });
-  if (error) { msg.className = 'settings-msg err'; msg.textContent = error.message; }
-  else { msg.className = 'settings-msg ok'; msg.textContent = 'Confirmation email sent. Check your inbox.'; }
-}
+
 
 async function savePassword() {
   const val = document.getElementById('set-new-password').value;
@@ -2345,6 +2416,11 @@ sb.auth.getSession().then(({ data: { session } }) => {
   if (session) onSignIn(session.user);
 });
 sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    document.getElementById('recovery-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    return;
+  }
   if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
     onSignIn(session.user);
   } else if (event === 'SIGNED_OUT') {
