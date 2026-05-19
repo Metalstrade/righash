@@ -2472,28 +2472,19 @@ async function submitBugReport() {
   btn.disabled = true; btn.textContent = 'Sending…';
   msg.className = 'settings-msg'; msg.textContent = '';
 
-  try {
-    const res = await fetch('https://formsubmit.co/ajax/righash@proton.me', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        _subject: 'Righash Bug Report',
-        message: text,
-        from: currentUser?.email || 'anonymous',
-        _template: 'table',
-        _captcha: 'false',
-      }),
-    });
-    if (res.ok) {
-      localStorage.setItem('rh_last_bug_report', String(Date.now()));
-      msg.className = 'settings-msg ok';
-      msg.textContent = 'Report sent. Thank you!';
-      document.getElementById('bug-report-text').value = '';
-      document.getElementById('bug-char-count').textContent = '0 / 150';
-    } else {
-      throw new Error('server error');
-    }
-  } catch {
+  const { error } = await sb.from('bug_reports').insert({
+    user_id: currentUser?.id || null,
+    email:   currentUser?.email || null,
+    message: text,
+  });
+
+  if (!error) {
+    localStorage.setItem('rh_last_bug_report', String(Date.now()));
+    msg.className = 'settings-msg ok';
+    msg.textContent = 'Report sent. Thank you!';
+    document.getElementById('bug-report-text').value = '';
+    document.getElementById('bug-char-count').textContent = '0 / 150';
+  } else {
     msg.className = 'settings-msg err';
     msg.textContent = 'Failed to send. Please try again.';
   }
