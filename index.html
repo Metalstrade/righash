@@ -2200,15 +2200,15 @@ function renderChart() {
 async function recordDailySnapshot() {
   if (!currentUser || !userMiners.length) return;
   const today = new Date().toISOString().split('T')[0];
-  const { data: existing } = await sb.from('profit_snapshots')
-    .select('id').eq('user_id', currentUser.id).eq('snapshot_date', today).maybeSingle();
-  if (existing) return;
   let totalNet = 0, totalGross = 0;
   for (const m of userMiners) {
     const { gross, net } = calcDailyEarnings(m);
     totalNet += net; totalGross += gross;
   }
-  await sb.from('profit_snapshots').insert({ user_id: currentUser.id, snapshot_date: today, total_net: totalNet, total_gross: totalGross });
+  await sb.from('profit_snapshots').upsert(
+    { user_id: currentUser.id, snapshot_date: today, total_net: totalNet, total_gross: totalGross },
+    { onConflict: 'user_id,snapshot_date' }
+  );
 }
 
 function toggleView() {
