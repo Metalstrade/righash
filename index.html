@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {
   --bg:       #0C0C0C;
@@ -239,6 +240,31 @@ nav {
   margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
 }
 .miners-title { font-size: 13px; font-weight: 600; color: var(--muted2); letter-spacing: 0.05em; text-transform: uppercase; }
+/* Section tabs */
+.section-tabs { display: none; align-items: center; gap: 2px; }
+.section-tab {
+  padding: 7px 16px; border-radius: 4px; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; background: none;
+  border: 1px solid transparent; color: var(--muted);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.section-tab:hover { color: var(--text); background: var(--bg4); }
+.section-tab.active { color: var(--text); background: var(--bg4); border-color: var(--border); }
+/* Stats section */
+.algo-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.algo-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; }
+.algo-card-name { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.algo-card-hash { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 600; color: var(--text); }
+.algo-card-unit { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.chart-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; }
+.chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.chart-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted2); }
+.chart-period { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.chart-wrap { position: relative; height: 240px; }
+.chart-empty { text-align: center; padding: 60px 0; }
+.chart-empty-title { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.chart-empty-sub { font-size: 12px; color: var(--muted); opacity: 0.6; }
 .btn-add-miner {
   display: flex; align-items: center; gap: 7px;
   padding: 8px 18px; border-radius: 4px; font-size: 11px; font-weight: 600;
@@ -748,7 +774,11 @@ footer {
 
   <div class="miners-section">
     <div class="miners-toolbar">
-      <div class="miners-title">My Miners</div>
+      <div class="miners-title" id="section-title-guest">My Miners</div>
+      <div class="section-tabs" id="section-tabs">
+        <button class="section-tab active" id="tab-miners" onclick="switchSection('miners')">My Miners</button>
+        <button class="section-tab" id="tab-stats" onclick="switchSection('stats')">My Stats</button>
+      </div>
       <div class="toolbar-right" id="toolbar-right">
         <button class="btn-view-toggle" id="view-toggle-btn" onclick="toggleView()" title="Toggle view">
           <svg id="view-icon-compact" width="14" height="12" viewBox="0 0 14 12" fill="currentColor" style="display:none"><rect x="0" y="0" width="14" height="2" rx="1"/><rect x="0" y="5" width="14" height="2" rx="1"/><rect x="0" y="10" width="14" height="2" rx="1"/></svg>
@@ -761,17 +791,35 @@ footer {
       </div>
     </div>
 
-    <div id="miners-empty" class="miners-empty">
-      <div class="empty-icon">⛏️</div>
-      <div class="empty-title">No miners yet</div>
-      <div class="empty-sub">Add your first miner to start tracking profitability and power costs in real time.</div>
-      <button class="btn-add-big" onclick="openAddMiner()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Your First Miner
-      </button>
+    <div id="miners-content">
+      <div id="miners-empty" class="miners-empty">
+        <div class="empty-icon">⛏️</div>
+        <div class="empty-title">No miners yet</div>
+        <div class="empty-sub">Add your first miner to start tracking profitability and power costs in real time.</div>
+        <button class="btn-add-big" onclick="openAddMiner()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Your First Miner
+        </button>
+      </div>
+      <div id="miners-grid" class="miners-grid" style="display:none;"></div>
     </div>
 
-    <div id="miners-grid" class="miners-grid" style="display:none;"></div>
+    <div id="stats-section" style="display:none;">
+      <div class="algo-cards" id="algo-cards"></div>
+      <div class="chart-section">
+        <div class="chart-header">
+          <div class="chart-title">Daily Net Profit</div>
+          <div class="chart-period" id="chart-period"></div>
+        </div>
+        <div id="chart-empty" class="chart-empty" style="display:none;">
+          <div class="chart-empty-title">No data yet</div>
+          <div class="chart-empty-sub">A snapshot is recorded each time you open the dashboard. Come back tomorrow to see your first data point.</div>
+        </div>
+        <div class="chart-wrap" id="chart-wrap">
+          <canvas id="profit-chart"></canvas>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1743,7 +1791,7 @@ async function initTicker() {
     if (crypto['ergo'])             coinPrices['ERGO'] = crypto['ergo'].usd;
     if (crypto['zcash'])            coinPrices['ZEC']  = crypto['zcash'].usd;
     // Re-render miners now that prices are available
-    if (userMiners.length) renderMiners();
+    if (userMiners.length) { renderMiners(); recordDailySnapshot(); }
   } catch {}
 
   function fmtPrice(v, lbl) {
@@ -1909,6 +1957,8 @@ function onSignIn(user) {
   document.getElementById('landing').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   document.getElementById('toolbar-right').style.display = 'flex';
+  document.getElementById('section-title-guest').style.display = 'none';
+  document.getElementById('section-tabs').style.display = 'flex';
   updateViewToggle();
   const name = (user.user_metadata?.full_name || email.split('@')[0] || 'Miner');
   document.getElementById('dash-user-name').textContent = name;
@@ -1925,6 +1975,8 @@ function onSignOut() {
   document.getElementById('landing').style.display = '';
   document.getElementById('dashboard').style.display = 'none';
   userMiners = [];
+  document.getElementById('section-tabs').style.display = 'none';
+  document.getElementById('section-title-guest').style.display = '';
 }
 
 // ── MINERS DB ──
@@ -1977,6 +2029,143 @@ function updateViewToggle() {
   const compact = viewMode === 'compact';
   document.getElementById('view-icon-compact').style.display  = compact ? 'none'  : 'block';
   document.getElementById('view-icon-expanded').style.display = compact ? 'block' : 'none';
+}
+
+// ── SECTION TOGGLE (Miners / Stats) ──
+let profitChart = null;
+
+function switchSection(mode) {
+  document.getElementById('miners-content').style.display  = mode === 'miners' ? '' : 'none';
+  document.getElementById('stats-section').style.display   = mode === 'stats'  ? '' : 'none';
+  document.getElementById('toolbar-right').style.display   = mode === 'miners' ? 'flex' : 'none';
+  document.getElementById('tab-miners').classList.toggle('active', mode === 'miners');
+  document.getElementById('tab-stats').classList.toggle('active', mode === 'stats');
+  if (mode === 'stats') renderStats();
+}
+
+function renderStats() {
+  renderAlgoCards();
+  loadAndRenderChart();
+}
+
+function renderAlgoCards() {
+  const algMap = {};
+  for (const m of userMiners) {
+    const qty = m.quantity ?? 1;
+    const key = m.algorithm;
+    if (!algMap[key]) algMap[key] = { algorithm: m.algorithm, unit: m.hashrate_unit, total: 0, coins: [] };
+    algMap[key].total += m.hashrate * qty;
+    if (!algMap[key].coins.includes(m.coin)) algMap[key].coins.push(m.coin);
+  }
+  const container = document.getElementById('algo-cards');
+  const entries = Object.values(algMap);
+  if (!entries.length) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:13px;">No miners added yet.</div>';
+    return;
+  }
+  container.innerHTML = entries.map(a => {
+    const val = a.total % 1 === 0 ? a.total : parseFloat(a.total.toFixed(4));
+    return `<div class="algo-card">
+      <div class="algo-card-name">${esc(a.algorithm)}</div>
+      <div class="algo-card-hash">${val}</div>
+      <div class="algo-card-unit">${esc(a.unit)} · ${a.coins.map(c => esc(c)).join(', ')}</div>
+    </div>`;
+  }).join('');
+}
+
+async function loadAndRenderChart() {
+  const { data } = await sb.from('profit_snapshots')
+    .select('snapshot_date, total_net')
+    .eq('user_id', currentUser.id)
+    .order('snapshot_date')
+    .limit(90);
+
+  const wrap  = document.getElementById('chart-wrap');
+  const empty = document.getElementById('chart-empty');
+  const period = document.getElementById('chart-period');
+
+  if (!data || !data.length) {
+    wrap.style.display = 'none';
+    empty.style.display = 'block';
+    period.textContent = '';
+    return;
+  }
+  wrap.style.display = '';
+  empty.style.display = 'none';
+  period.textContent = 'last ' + data.length + ' day' + (data.length !== 1 ? 's' : '');
+
+  const labels = data.map(d => {
+    const dt = new Date(d.snapshot_date + 'T12:00:00');
+    return dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+  });
+  const values = data.map(d => parseFloat(d.total_net));
+
+  if (profitChart) { profitChart.destroy(); profitChart = null; }
+
+  const ctx = document.getElementById('profit-chart').getContext('2d');
+  profitChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderColor: '#10B981',
+        backgroundColor: 'rgba(16,185,129,0.07)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: data.length < 20 ? 4 : 2,
+        pointBackgroundColor: '#10B981',
+        pointBorderColor: 'transparent',
+        pointHoverRadius: 5,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1E1E1E',
+          borderColor: '#3A3A3A',
+          borderWidth: 1,
+          titleColor: '#888888',
+          bodyColor: '#F5F5F5',
+          padding: 10,
+          callbacks: {
+            title: items => items[0].label,
+            label: ctx => (ctx.parsed.y >= 0 ? '+' : '') + '$' + ctx.parsed.y.toFixed(2) + '/day',
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#1A1A1A' },
+          ticks: { color: '#555', font: { family: "'JetBrains Mono', monospace", size: 10 }, maxTicksLimit: 12 },
+          border: { color: '#2A2A2A' }
+        },
+        y: {
+          grid: { color: '#1A1A1A' },
+          ticks: { color: '#555', font: { family: "'JetBrains Mono', monospace", size: 10 }, callback: v => '$' + v.toFixed(2) },
+          border: { color: '#2A2A2A' }
+        }
+      }
+    }
+  });
+}
+
+async function recordDailySnapshot() {
+  if (!currentUser || !userMiners.length) return;
+  const today = new Date().toISOString().split('T')[0];
+  const { data: existing } = await sb.from('profit_snapshots')
+    .select('id').eq('user_id', currentUser.id).eq('snapshot_date', today).maybeSingle();
+  if (existing) return;
+  let totalNet = 0, totalGross = 0;
+  for (const m of userMiners) {
+    const { gross, net } = calcDailyEarnings(m);
+    totalNet += net; totalGross += gross;
+  }
+  await sb.from('profit_snapshots').insert({ user_id: currentUser.id, snapshot_date: today, total_net: totalNet, total_gross: totalGross });
 }
 
 function toggleView() {
