@@ -1947,7 +1947,7 @@ const COINS = [
 // ── NETWORK HASHRATES — fallback values (updated from WhatToMine 2026-05) ──
 // Live values fetched from WhatToMine via edge function and stored in wtmPerUnit
 const NET_HR = {
-  'BTC':  { perUnit: 5.0e-7,  unit: 'TH/s' },  // ~900 EH/s network, 3.125 BTC/block
+  'BTC':  { perUnit: 4.6e-7,  unit: 'TH/s' },  // confirmed correct by user
   'LTC':  { perUnit: 1.26e-3, unit: 'GH/s' },
   'DOGE': { perUnit: 4.46,    unit: 'GH/s' },
   'KAS':  { perUnit: 7.83,    unit: 'TH/s' },
@@ -1988,7 +1988,7 @@ let nhScryptPerGH = null;
 // e.g. WTM uses GH/s for CKB but miners store TH/s → scale 1000 (1 TH = 1000 GH)
 // LTC/DOGE use NiceHash profcalc/devices instead
 const WTM_COINS = {
-  BTC:  { id: 1,   scale: 1    },  // WTM: TH/s,   miner: TH/s
+  // BTC removed — WTM live data runs ahead of actual pool payouts; uses NET_HR fallback
   XMR:  { id: 101, scale: 1    },  // WTM: KH/s,   miner: KH/s
   ZEC:  { id: 166, scale: 1    },  // WTM: KSol/s, miner: KSol/s
   ETC:  { id: 162, scale: 1    },  // WTM: MH/s,   miner: MH/s
