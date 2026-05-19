@@ -2277,7 +2277,7 @@ let userCurrency    = localStorage.getItem('rh_currency')       || 'USD';
 let userDefaultElec = parseFloat(localStorage.getItem('rh_default_elec')) || 0.10;
 let userDefaultPeriod = localStorage.getItem('rh_default_period') || 'day';
 let userTimezone    = localStorage.getItem('rh_timezone')        || Intl.DateTimeFormat().resolvedOptions().timeZone;
-let eurRate = null;
+let eurRate = 0.92;
 
 async function fetchEurRate() {
   try {
