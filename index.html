@@ -1193,6 +1193,14 @@ footer {
           <label class="form-label">Email</label>
           <div id="set-cur-email" style="font-size:13px;color:var(--muted2);padding:4px 0;"></div>
         </div>
+        <div class="form-field" style="margin-bottom:8px;">
+          <label class="form-label">Username</label>
+          <div class="settings-row">
+            <input type="text" id="set-username" class="form-input" placeholder="e.g. JaniMiner" autocomplete="off" maxlength="32">
+            <button class="btn-settings-save" onclick="saveUsername()">Save</button>
+          </div>
+        </div>
+        <div class="settings-msg" id="set-username-msg"></div>
       </div>
 
       <div class="settings-section">
@@ -2319,6 +2327,8 @@ function openSettings() {
   // Pre-fill current values
   const email = currentUser?.email || '';
   document.getElementById('set-cur-email').textContent = email;
+  document.getElementById('set-username').value = currentUser?.user_metadata?.full_name || '';
+  document.getElementById('set-username-msg').textContent = '';
   document.getElementById('set-new-password').value = '';
   document.getElementById('set-password-msg').textContent = '';
   document.getElementById('set-elec-rate').value = userDefaultElec.toFixed(3);
@@ -2363,6 +2373,20 @@ function selectDefaultPeriod(p) {
 }
 
 
+
+async function saveUsername() {
+  const val = document.getElementById('set-username').value.trim();
+  const msg = document.getElementById('set-username-msg');
+  if (!val) { msg.className = 'settings-msg err'; msg.textContent = 'Enter a username.'; return; }
+  msg.className = 'settings-msg'; msg.textContent = 'Saving…';
+  const { data, error } = await sb.auth.updateUser({ data: { full_name: val } });
+  if (error) { msg.className = 'settings-msg err'; msg.textContent = error.message; return; }
+  msg.className = 'settings-msg ok'; msg.textContent = 'Username saved.';
+  if (data?.user) {
+    document.getElementById('dash-user-name').textContent = val;
+    currentUser = data.user;
+  }
+}
 
 async function savePassword() {
   const val = document.getElementById('set-new-password').value;
