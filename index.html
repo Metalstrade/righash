@@ -3023,12 +3023,12 @@ function renderMiners() {
       <div class="miner-elec">
         <div class="elec-label">USD/kWh</div>
         <div class="elec-ctrl">
-          <button class="elec-btn" onclick="updateElec('${esc(m.id)}', -0.01)">−</button>
+          <button class="elec-btn" onclick="updateElec('${esc(m.id)}', -0.001)">−</button>
           <input class="elec-val-input" type="number" step="0.001" min="0.001" max="9.999"
             value="${(m.electricity_rate ?? userDefaultElec).toFixed(3)}"
             onchange="setElecRate('${esc(m.id)}', this.value)"
             onclick="this.select()" />
-          <button class="elec-btn" onclick="updateElec('${esc(m.id)}', +0.01)">+</button>
+          <button class="elec-btn" onclick="updateElec('${esc(m.id)}', +0.001)">+</button>
         </div>
       </div>
       <div class="miner-earnings">
