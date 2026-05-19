@@ -2809,7 +2809,7 @@ function calcDailyEarnings(miner) {
   const price = coinPrices[coin] || 0;
   const net_hr = NET_HR[coin];
   if (!net_hr || !price) return { gross: 0, elecCost: 0, net: 0 };
-  const perUnit = (wtmPerUnit[coin] != null) ? wtmPerUnit[coin] : net_hr.perUnit;
+  const perUnit = (wtmPerUnit[coin] > 0) ? wtmPerUnit[coin] : net_hr.perUnit;
   const gross = miner.hashrate * perUnit * price * qty;
   return { gross, elecCost, net: gross - elecCost };
 }
