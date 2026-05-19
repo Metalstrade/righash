@@ -1853,7 +1853,7 @@ async function initTicker() {
     if (crypto['ergo'])             coinPrices['ERGO'] = crypto['ergo'].usd;
     if (crypto['zcash'])            coinPrices['ZEC']  = crypto['zcash'].usd;
     // Re-render miners now that prices are available
-    if (userMiners.length) { renderMiners(); recordDailySnapshot(); }
+    if (userMiners.length) renderMiners();
   } catch {}
 
   function fmtPrice(v, lbl) {
@@ -2715,12 +2715,11 @@ function showToast(msg, type) {
 }
 
 // ── INIT ──
-initTicker();
-// Fetch NiceHash profcalc/devices for Scrypt (LTC/DOGE), refresh every 5 min
-fetchNhProfitability();
+// Wait for all three price sources before snapshotting, so the saved value
+// uses live WTM rates rather than the stale NET_HR fallbacks.
+Promise.allSettled([initTicker(), fetchNhProfitability(), fetchWtmProfitability()])
+  .then(() => { if (userMiners.length) recordDailySnapshot(); });
 setInterval(fetchNhProfitability, 5 * 60 * 1000);
-// Fetch WhatToMine for all other coins, refresh every 5 min
-fetchWtmProfitability();
 setInterval(fetchWtmProfitability, 5 * 60 * 1000);
 // Refresh prices every 60s
 setInterval(async () => {
