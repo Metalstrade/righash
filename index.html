@@ -234,6 +234,18 @@ nav {
 }
 .period-btn:hover { color: var(--text); }
 .period-btn.active { background: var(--bg4); color: var(--text); }
+.btn-header-collapse {
+  display: none;
+  width: 28px; height: 28px; border-radius: 4px;
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  align-items: center; justify-content: center;
+  transition: color 0.12s;
+  margin-left: 2px;
+}
+.btn-header-collapse:hover { color: var(--text); }
+@media (max-width: 700px) {
+  .btn-header-collapse { display: flex; }
+}
 .dash-stats {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 12px; padding: 20px 24px;
@@ -775,7 +787,7 @@ footer {
 <!-- ── DASHBOARD ── -->
 <div id="dashboard">
   <div class="dash-header">
-    <div class="dash-header-left">
+    <div class="dash-header-left" id="dash-header-left">
       <div class="dash-greeting">Good morning, <span id="dash-user-name">Miner</span></div>
       <div class="dash-sub" id="dash-date">—</div>
     </div>
@@ -783,9 +795,12 @@ footer {
       <button class="period-btn active" data-period="day"   onclick="setPeriod('day')">D</button>
       <button class="period-btn"        data-period="month" onclick="setPeriod('month')">M</button>
       <button class="period-btn"        data-period="year"  onclick="setPeriod('year')">Y</button>
+      <button class="btn-header-collapse" id="btn-header-collapse" onclick="toggleHeaderCollapse()" title="Hide/show header">
+        <svg id="collapse-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+      </button>
     </div>
   </div>
-  <div class="dash-stats">
+  <div class="dash-stats" id="dash-stats-section">
     <div class="stat-card">
       <div class="stat-card-label">Daily Earnings</div>
       <div class="stat-card-val green" id="stat-daily">$0.00</div>
@@ -2090,6 +2105,15 @@ function setPeriod(p) {
   document.querySelectorAll('.period-btn').forEach(b => b.classList.toggle('active', b.dataset.period === p));
   document.getElementById('stat-net-label').textContent = PERIOD_STAT_LABEL[p];
   renderMiners();
+}
+
+let headerCollapsed = false;
+function toggleHeaderCollapse() {
+  headerCollapsed = !headerCollapsed;
+  document.getElementById('dash-header-left').style.display = headerCollapsed ? 'none' : '';
+  document.getElementById('dash-stats-section').style.display = headerCollapsed ? 'none' : '';
+  document.getElementById('collapse-icon').setAttribute('points',
+    headerCollapsed ? '6 9 12 15 18 9' : '18 15 12 9 6 15');
 }
 
 // ── SECTION TOGGLE (Miners / Stats) ──
