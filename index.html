@@ -1261,6 +1261,19 @@ footer {
     </div>
 
     <button class="btn-form-submit" onclick="saveSettings()">Save Changes</button>
+
+    <div class="settings-section" style="margin-top:24px;margin-bottom:0;">
+      <div class="settings-section-title">Report a Bug</div>
+      <textarea id="bug-report-text" class="form-input" maxlength="150" rows="3"
+        placeholder="Describe the issue... (max 150 characters)"
+        oninput="document.getElementById('bug-char-count').textContent=(this.value.length)+' / 150'"
+        style="resize:none;line-height:1.5;"></textarea>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px;">
+        <span id="bug-char-count" style="font-size:11px;color:var(--muted);">0 / 150</span>
+        <button id="bug-submit-btn" class="btn-settings-save" onclick="submitBugReport()" style="padding:8px 18px;">Send Report</button>
+      </div>
+      <div id="bug-report-msg" class="settings-msg"></div>
+    </div>
   </div>
 </div>
 
@@ -2341,6 +2354,10 @@ function openSettings() {
   document.getElementById('set-password-msg').textContent = '';
   document.getElementById('set-elec-rate').value = userDefaultElec.toFixed(3);
   document.getElementById('set-elec-apply-all').checked = false;
+  document.getElementById('bug-report-text').value = '';
+  document.getElementById('bug-char-count').textContent = '0 / 150';
+  document.getElementById('bug-report-msg').className = 'settings-msg';
+  document.getElementById('bug-report-msg').textContent = '';
   // Currency toggle
   document.querySelectorAll('#currency-toggle .settings-toggle-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.cur === userCurrency));
@@ -2434,6 +2451,53 @@ async function saveSettings() {
   });
   closeSettings();
   showToast('Settings saved', 'success');
+}
+
+// ── BUG REPORT ──
+async function submitBugReport() {
+  const text = document.getElementById('bug-report-text').value.trim();
+  const msg = document.getElementById('bug-report-msg');
+  const btn = document.getElementById('bug-submit-btn');
+  if (!text) { msg.className = 'settings-msg err'; msg.textContent = 'Please describe the issue.'; return; }
+
+  const COOLDOWN = 3 * 60 * 1000;
+  const lastTs = parseInt(localStorage.getItem('rh_last_bug_report') || '0');
+  const wait = COOLDOWN - (Date.now() - lastTs);
+  if (wait > 0) {
+    msg.className = 'settings-msg err';
+    msg.textContent = 'Please wait ' + Math.ceil(wait / 1000) + 's before sending another report.';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Sending…';
+  msg.className = 'settings-msg'; msg.textContent = '';
+
+  try {
+    const res = await fetch('https://formsubmit.co/ajax/righash@proton.me', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        _subject: 'Righash Bug Report',
+        message: text,
+        from: currentUser?.email || 'anonymous',
+        _template: 'table',
+        _captcha: 'false',
+      }),
+    });
+    if (res.ok) {
+      localStorage.setItem('rh_last_bug_report', String(Date.now()));
+      msg.className = 'settings-msg ok';
+      msg.textContent = 'Report sent. Thank you!';
+      document.getElementById('bug-report-text').value = '';
+      document.getElementById('bug-char-count').textContent = '0 / 150';
+    } else {
+      throw new Error('server error');
+    }
+  } catch {
+    msg.className = 'settings-msg err';
+    msg.textContent = 'Failed to send. Please try again.';
+  }
+  btn.disabled = false; btn.textContent = 'Send Report';
 }
 
 // ── MATH CAPTCHA ──
