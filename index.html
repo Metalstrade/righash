@@ -478,6 +478,7 @@ nav {
   color: var(--muted2); font-size: 14px; cursor: pointer;
   display: flex; align-items: center; justify-content: center; line-height: 1;
   transition: background 0.1s, color 0.1s; flex-shrink: 0;
+  user-select: none; -webkit-user-select: none; touch-action: none;
 }
 .elec-btn:hover { background: var(--bg3); color: var(--text); }
 .elec-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text); min-width: 52px; text-align: center; }
@@ -1125,9 +1126,9 @@ footer {
     <div class="form-field" style="margin-top:16px;">
       <label class="form-label">Electricity Rate (USD/kWh)</label>
       <div class="elec-ctrl">
-        <button class="elec-btn" onclick="adjAddElec(-0.001)">−</button>
+        <button class="elec-btn" onmousedown="holdStart(() => addElecStep(-1))" onmouseup="holdStop()" onmouseleave="holdStop()" ontouchstart="holdStart(() => addElecStep(-1));event.preventDefault()" ontouchend="holdStop()">−</button>
         <div class="elec-val" id="add-elec-val">0.100</div>
-        <button class="elec-btn" onclick="adjAddElec(+0.001)">+</button>
+        <button class="elec-btn" onmousedown="holdStart(() => addElecStep(+1))" onmouseup="holdStop()" onmouseleave="holdStop()" ontouchstart="holdStart(() => addElecStep(+1));event.preventDefault()" ontouchend="holdStop()">+</button>
         <span style="font-size:11px;color:var(--muted);margin-left:8px;">default 0.10 USD/kWh</span>
       </div>
     </div>
@@ -3025,18 +3026,18 @@ function renderMiners() {
       <div class="miner-elec">
         <div class="elec-label">USD/kWh</div>
         <div class="elec-ctrl">
-          <button class="elec-btn" onclick="updateElec('${esc(m.id)}', -0.001)">−</button>
-          <input class="elec-val-input" type="number" step="0.001" min="0.001" max="9.999"
+          <button class="elec-btn" onmousedown="holdStart(() => elecStep('${esc(m.id)}', -1))" onmouseup="holdStop()" onmouseleave="holdStop()" ontouchstart="holdStart(() => elecStep('${esc(m.id)}', -1));event.preventDefault()" ontouchend="holdStop()">−</button>
+          <input id="elec-inp-${esc(m.id)}" class="elec-val-input" type="number" step="0.001" min="0.001" max="9.999"
             value="${(m.electricity_rate ?? userDefaultElec).toFixed(3)}"
             onchange="setElecRate('${esc(m.id)}', this.value)"
             onclick="this.select()" />
-          <button class="elec-btn" onclick="updateElec('${esc(m.id)}', +0.001)">+</button>
+          <button class="elec-btn" onmousedown="holdStart(() => elecStep('${esc(m.id)}', +1))" onmouseup="holdStop()" onmouseleave="holdStop()" ontouchstart="holdStart(() => elecStep('${esc(m.id)}', +1));event.preventDefault()" ontouchend="holdStop()">+</button>
         </div>
       </div>
       <div class="miner-earnings">
-        <div class="miner-earn-net ${netCls}">${net >= 0 ? '+' : ''}${fmtMoney(net)}${pLabel}</div>
-        <div class="miner-earn-gross">Gross ${fmtMoney(gross)}</div>
-        <div class="miner-earn-gross" style="color:var(--red);">Elec ${fmtMoney(elecCost)}</div>
+        <div id="earn-net-${esc(m.id)}" class="miner-earn-net ${netCls}">${net >= 0 ? '+' : ''}${fmtMoney(net)}${pLabel}</div>
+        <div id="earn-gross-${esc(m.id)}" class="miner-earn-gross">Gross ${fmtMoney(gross)}</div>
+        <div id="earn-elec-${esc(m.id)}" class="miner-earn-gross" style="color:var(--red);">Elec ${fmtMoney(elecCost)}</div>
       </div>
       <div class="miner-actions">
         <button class="btn-power ${isActive ? 'on' : ''}" onclick="toggleMinerActive('${esc(m.id)}')" title="${isActive ? 'Active — click to turn off' : 'Inactive — click to turn on'}"></button>
@@ -3247,6 +3248,47 @@ function resetCoin() {
 function adjAddElec(delta) {
   addElecRate = Math.max(0.001, Math.round((addElecRate + delta) * 1000) / 1000);
   document.getElementById('add-elec-val').textContent = addElecRate.toFixed(3);
+}
+
+// ── Hold-to-repeat with acceleration for +/− elec buttons ──
+const _hold = { timer: null, interval: null, t0: 0, saves: {} };
+function holdStart(fn) {
+  _hold.t0 = Date.now(); fn();
+  clearTimeout(_hold.timer); clearInterval(_hold.interval);
+  _hold.timer = setTimeout(() => { _hold.interval = setInterval(fn, 80); }, 500);
+}
+function holdStop() {
+  clearTimeout(_hold.timer); clearInterval(_hold.interval);
+  _hold.timer = null; _hold.interval = null;
+}
+function addElecStep(dir) {
+  const step = (Date.now() - _hold.t0 > 1500 ? 0.01 : 0.001) * dir;
+  addElecRate = Math.max(0.001, Math.min(9.999, Math.round((addElecRate + step) * 1000) / 1000));
+  document.getElementById('add-elec-val').textContent = addElecRate.toFixed(3);
+}
+function elecStep(id, dir) {
+  const m = userMiners.find(x => x.id === id);
+  if (!m) return;
+  const step = (Date.now() - _hold.t0 > 1500 ? 0.01 : 0.001) * dir;
+  const cur = m.electricity_rate ?? userDefaultElec;
+  m.electricity_rate = Math.max(0.001, Math.min(9.999, Math.round((cur + step) * 1000) / 1000));
+  const inp = document.getElementById('elec-inp-' + id);
+  if (inp) inp.value = m.electricity_rate.toFixed(3);
+  const { gross, elecCost, net } = calcDailyEarnings(m);
+  const mult = PERIOD_MULT[profitPeriod] || 1;
+  const pLabel = PERIOD_LABEL[profitPeriod];
+  const netEl  = document.getElementById('earn-net-'   + id);
+  const grossEl = document.getElementById('earn-gross-' + id);
+  const elecEl  = document.getElementById('earn-elec-'  + id);
+  if (netEl)   { netEl.textContent = (net >= 0 ? '+' : '') + fmtMoney(net * mult) + pLabel; netEl.className = 'miner-earn-net ' + (net >= 0 ? 'positive' : 'negative'); }
+  if (grossEl) grossEl.textContent = 'Gross ' + fmtMoney(gross * mult);
+  if (elecEl)  elecEl.textContent  = 'Elec '  + fmtMoney(elecCost * mult);
+  updateStats();
+  clearTimeout(_hold.saves[id]);
+  _hold.saves[id] = setTimeout(async () => {
+    const { error } = await sb.from('user_miners').update({ electricity_rate: m.electricity_rate }).eq('id', id).eq('user_id', currentUser.id);
+    if (error) showToast('Save failed', 'error');
+  }, 1000);
 }
 
 async function submitAddMiner() {
