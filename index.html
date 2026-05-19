@@ -2473,12 +2473,27 @@ async function submitBugReport() {
   if (!text) { msg.className = 'settings-msg err'; msg.textContent = 'Please describe the issue.'; return; }
 
   const COOLDOWN = 3 * 60 * 1000;
+  // Client-side quick check (avoids unnecessary DB round-trip)
   const lastTs = parseInt(localStorage.getItem('rh_last_bug_report') || '0');
-  const wait = COOLDOWN - (Date.now() - lastTs);
-  if (wait > 0) {
+  const localWait = COOLDOWN - (Date.now() - lastTs);
+  if (localWait > 0) {
     msg.className = 'settings-msg err';
-    msg.textContent = 'Please wait ' + Math.ceil(wait / 1000) + 's before sending another report.';
+    msg.textContent = 'Please wait ' + Math.ceil(localWait / 1000) + 's before sending another report.';
     return;
+  }
+  // Server-side check — can't be bypassed by clearing localStorage
+  if (currentUser) {
+    const { data: last } = await sb.from('bug_reports')
+      .select('created_at').eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false }).limit(1).maybeSingle();
+    if (last) {
+      const serverWait = COOLDOWN - (Date.now() - new Date(last.created_at).getTime());
+      if (serverWait > 0) {
+        msg.className = 'settings-msg err';
+        msg.textContent = 'Please wait ' + Math.ceil(serverWait / 1000) + 's before sending another report.';
+        return;
+      }
+    }
   }
 
   btn.disabled = true; btn.textContent = 'Sending…';
@@ -2963,9 +2978,9 @@ function renderMiners() {
           ${net >= 0 ? '+' : ''}${fmtMoney(net)}<span class="compact-earn-sub">${pLabel}</span>
         </div>
         <div class="compact-actions">
-          <button class="btn-power ${isActive ? 'on' : ''}" onclick="toggleMinerActive('${m.id}')" title="${isActive ? 'Active — click to turn off' : 'Inactive — click to turn on'}"></button>
-          <button class="btn-miner-note ${hasNotes ? 'has-notes' : ''}" onclick="openNotes('${m.id}')" title="Notes">${NOTE_ICON}</button>
-          <button class="btn-miner-del" onclick="deleteMiner('${m.id}')" title="Remove">${DEL_ICON}</button>
+          <button class="btn-power ${isActive ? 'on' : ''}" onclick="toggleMinerActive('${esc(m.id)}')" title="${isActive ? 'Active — click to turn off' : 'Inactive — click to turn on'}"></button>
+          <button class="btn-miner-note ${hasNotes ? 'has-notes' : ''}" onclick="openNotes('${esc(m.id)}')" title="Notes">${NOTE_ICON}</button>
+          <button class="btn-miner-del" onclick="deleteMiner('${esc(m.id)}')" title="Remove">${DEL_ICON}</button>
         </div>
       </div>`;
     }
@@ -2993,20 +3008,20 @@ function renderMiners() {
       <div class="miner-qty">
         <div class="qty-label">Units</div>
         <div class="qty-ctrl">
-          <button class="qty-btn" onclick="updateQuantity('${m.id}', -1)">−</button>
+          <button class="qty-btn" onclick="updateQuantity('${esc(m.id)}', -1)">−</button>
           <div class="qty-val">${qty}</div>
-          <button class="qty-btn" onclick="updateQuantity('${m.id}', +1)">+</button>
+          <button class="qty-btn" onclick="updateQuantity('${esc(m.id)}', +1)">+</button>
         </div>
       </div>
       <div class="miner-elec">
         <div class="elec-label">USD/kWh</div>
         <div class="elec-ctrl">
-          <button class="elec-btn" onclick="updateElec('${m.id}', -0.01)">−</button>
+          <button class="elec-btn" onclick="updateElec('${esc(m.id)}', -0.01)">−</button>
           <input class="elec-val-input" type="number" step="0.001" min="0.001" max="9.999"
             value="${(m.electricity_rate ?? userDefaultElec).toFixed(3)}"
-            onchange="setElecRate('${m.id}', this.value)"
+            onchange="setElecRate('${esc(m.id)}', this.value)"
             onclick="this.select()" />
-          <button class="elec-btn" onclick="updateElec('${m.id}', +0.01)">+</button>
+          <button class="elec-btn" onclick="updateElec('${esc(m.id)}', +0.01)">+</button>
         </div>
       </div>
       <div class="miner-earnings">
@@ -3015,9 +3030,9 @@ function renderMiners() {
         <div class="miner-earn-gross" style="color:var(--red);">Elec ${fmtMoney(elecCost)}</div>
       </div>
       <div class="miner-actions">
-        <button class="btn-power ${isActive ? 'on' : ''}" onclick="toggleMinerActive('${m.id}')" title="${isActive ? 'Active — click to turn off' : 'Inactive — click to turn on'}"></button>
-        <button class="btn-miner-note ${hasNotes ? 'has-notes' : ''}" onclick="openNotes('${m.id}')" title="Notes">${NOTE_ICON}</button>
-        <button class="btn-miner-del" onclick="deleteMiner('${m.id}')" title="Remove miner">${DEL_ICON}</button>
+        <button class="btn-power ${isActive ? 'on' : ''}" onclick="toggleMinerActive('${esc(m.id)}')" title="${isActive ? 'Active — click to turn off' : 'Inactive — click to turn on'}"></button>
+        <button class="btn-miner-note ${hasNotes ? 'has-notes' : ''}" onclick="openNotes('${esc(m.id)}')" title="Notes">${NOTE_ICON}</button>
+        <button class="btn-miner-del" onclick="deleteMiner('${esc(m.id)}')" title="Remove miner">${DEL_ICON}</button>
       </div>
     </div>`;
   }).join('');
