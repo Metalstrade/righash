@@ -1962,7 +1962,7 @@ const NET_HR = {
   'ALEO': { perUnit: 0.8,   unit: 'MH/s' },
   'ALPH': { perUnit: 0.05,  unit: 'GH/s' },  // typical ASIC/GPU earnings ~0.05 ALPH/GH/day
   'BCN':  { perUnit: 2000,  unit: 'KH/s' },
-  'DASH': { perUnit: 0.0001, unit: 'GH/s' },
+  'DASH': { perUnit: 0.00022, unit: 'GH/s' },  // ~6 PH/s network, 576 blocks/day × 2.304 DASH
   'DCR':  { perUnit: 0.0005, unit: 'TH/s' },
   'GRIN': { perUnit: 0.002,  unit: 'GPS' },
   'GRS':  { perUnit: 0.005,  unit: 'GH/s' },
@@ -2042,9 +2042,8 @@ async function fetchWtmProfitability() {
       coins.map((sym, i) =>
         new Promise(res => setTimeout(res, i * 400)).then(() => {
           const id = WTM_COINS[sym].id;
-          // Encode full WTM URL so codetabs forwards all query params correctly
-          const wtmUrl = encodeURIComponent(`https://whattomine.com/coins/${id}.json?hr=1&p=0&fee=0&cost=0&cost_currency=USD`);
-          return fetch(`https://api.codetabs.com/v1/proxy?quest=${wtmUrl}`)
+          const url = `${WTM_BASE}/coins/${id}.json?hr=1&p=0&fee=0&cost=0&cost_currency=USD`;
+          return fetch(url)
             .then(r => r.ok ? r.json() : null)
             .then(d => ({ sym, d }));
         })
