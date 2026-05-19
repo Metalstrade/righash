@@ -774,6 +774,11 @@ footer {
       <div class="stat-card-sub">total across all miners</div>
     </div>
     <div class="stat-card">
+      <div class="stat-card-label">Electricity Cost</div>
+      <div class="stat-card-val" style="color:var(--red);" id="stat-elec">$0.00</div>
+      <div class="stat-card-sub">per day at current rates</div>
+    </div>
+    <div class="stat-card">
       <div class="stat-card-label">Active Miners</div>
       <div class="stat-card-val" id="stat-count">0</div>
       <div class="stat-card-sub">devices tracked</div>
@@ -2407,6 +2412,7 @@ function updateStats() {
   netEl.textContent = (totalNet >= 0 ? '+' : '') + '$' + totalNet.toFixed(2);
   netEl.style.color = totalNet >= 0 ? '#10B981' : 'var(--red)';
   document.getElementById('stat-power').textContent = totalWatts >= 1000 ? (totalWatts/1000).toFixed(2) + ' kW' : totalWatts + ' W';
+  document.getElementById('stat-elec').textContent = '-$' + (totalGross - totalNet).toFixed(2);
   document.getElementById('stat-count').textContent = totalUnits;
 }
 
