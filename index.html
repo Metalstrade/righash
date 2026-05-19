@@ -785,7 +785,7 @@ footer {
 <div id="dashboard">
   <div class="dash-header">
     <div class="dash-header-left" id="dash-header-left">
-      <div class="dash-greeting">Good morning, <span id="dash-user-name">Miner</span></div>
+      <div class="dash-greeting"><span id="dash-greeting">Good morning</span>, <span id="dash-user-name">Miner</span></div>
       <div class="dash-sub" id="dash-date">—</div>
     </div>
     <div class="period-toggle" id="period-toggle">
@@ -2023,6 +2023,9 @@ function onSignIn(user) {
   const name = (user.user_metadata?.full_name || email.split('@')[0] || 'Miner');
   document.getElementById('dash-user-name').textContent = name;
   const now = new Date();
+  const h = now.getHours();
+  const greeting = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('dash-greeting').textContent = greeting;
   document.getElementById('dash-date').textContent = now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   loadMiners();
 }
