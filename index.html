@@ -246,6 +246,15 @@ nav {
   font-family: 'JetBrains Mono', monospace; background: var(--accent); border: 1px solid var(--accent); color: var(--bg);
   transition: background 0.15s;
 }
+.toolbar-right { display: none; align-items: center; gap: 8px; }
+.btn-view-toggle {
+  width: 36px; height: 36px; border-radius: 4px;
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--muted2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s, border-color 0.15s; flex-shrink: 0;
+}
+.btn-view-toggle:hover { background: var(--bg4); border-color: var(--border2); color: var(--text); }
 .btn-add-miner:hover { background: var(--accent2); border-color: var(--accent2); }
 
 /* Empty state */
@@ -277,7 +286,7 @@ nav {
   border: 1px solid var(--border);
   border-radius: 8px;
   display: grid;
-  grid-template-columns: auto 1fr auto auto auto auto auto;
+  grid-template-columns: auto 1fr auto auto auto auto auto auto;
   align-items: center;
   gap: 0;
   overflow: hidden;
@@ -370,6 +379,38 @@ nav {
   transition: border-color 0.15s, color 0.15s;
 }
 .btn-notes-cancel:hover { border-color: var(--border2); color: var(--text); }
+
+/* ── COMPACT VIEW ── */
+.miner-card.compact {
+  grid-template-columns: 4px auto 1fr auto auto !important;
+  grid-template-rows: auto !important;
+  align-items: stretch !important;
+  min-height: 48px;
+}
+.miner-card.compact .miner-coin-bar { grid-column: 1 !important; grid-row: 1 !important; }
+.compact-left { padding: 0 10px; display: flex; align-items: center; }
+.compact-name {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: flex; align-items: center; gap: 8px; padding: 0 4px;
+  min-width: 0;
+}
+.compact-qty {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted2);
+  background: var(--bg4); border: 1px solid var(--border);
+  padding: 1px 5px; border-radius: 3px; flex-shrink: 0;
+}
+.compact-earn {
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;
+  padding: 0 14px; white-space: nowrap;
+  border-left: 1px solid var(--border);
+  display: flex; align-items: center; gap: 2px;
+}
+.compact-earn-sub { font-size: 9px; opacity: 0.6; }
+.compact-actions {
+  padding: 0 10px; border-left: 1px solid var(--border);
+  display: flex; gap: 4px; align-items: center;
+}
 
 @media (max-width: 700px) {
   .miner-card {
@@ -694,10 +735,16 @@ footer {
   <div class="miners-section">
     <div class="miners-toolbar">
       <div class="miners-title">My Miners</div>
-      <button class="btn-add-miner" onclick="openAddMiner()" id="toolbar-add-btn" style="display:none;">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Miner
-      </button>
+      <div class="toolbar-right" id="toolbar-right">
+        <button class="btn-view-toggle" id="view-toggle-btn" onclick="toggleView()" title="Toggle view">
+          <svg id="view-icon-compact" width="14" height="12" viewBox="0 0 14 12" fill="currentColor" style="display:none"><rect x="0" y="0" width="14" height="2" rx="1"/><rect x="0" y="5" width="14" height="2" rx="1"/><rect x="0" y="10" width="14" height="2" rx="1"/></svg>
+          <svg id="view-icon-expanded" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="0.75" y="0.75" width="12.5" height="4.5" rx="1"/><rect x="0.75" y="8.75" width="12.5" height="4.5" rx="1"/></svg>
+        </button>
+        <button class="btn-add-miner" onclick="openAddMiner()" id="toolbar-add-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Miner
+        </button>
+      </div>
     </div>
 
     <div id="miners-empty" class="miners-empty">
@@ -1837,7 +1884,8 @@ function onSignIn(user) {
   document.getElementById('nav-user-email').textContent = email.split('@')[0];
   document.getElementById('landing').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
-  document.getElementById('toolbar-add-btn').style.display = '';
+  document.getElementById('toolbar-right').style.display = 'flex';
+  updateViewToggle();
   const name = (user.user_metadata?.full_name || email.split('@')[0] || 'Miner');
   document.getElementById('dash-user-name').textContent = name;
   const now = new Date();
@@ -1887,6 +1935,28 @@ async function updateQuantity(id, delta) {
   const qty = Math.min(100, Math.max(1, (m.quantity ?? 1) + delta));
   await sb.from('user_miners').update({ quantity: qty }).eq('id', id).eq('user_id', currentUser.id);
   m.quantity = qty;
+  renderMiners();
+}
+
+// ── VIEW MODE ──
+let viewMode = localStorage.getItem('rh_view_mode') || 'expanded';
+
+function shortMinerName(name) {
+  return name
+    .replace(/^(Antminer|WhatsMiner|ElphaPex|Goldshell|Canaan|Avalon|Innosilicon|Bitmain|VolcMiner|Bitdeer|Auradine|SealMiner|iBeLink|Jasminer|Iceriver|Bobcat)\s+/i, '')
+    .trim();
+}
+
+function updateViewToggle() {
+  const compact = viewMode === 'compact';
+  document.getElementById('view-icon-compact').style.display  = compact ? 'none'  : 'block';
+  document.getElementById('view-icon-expanded').style.display = compact ? 'block' : 'none';
+}
+
+function toggleView() {
+  viewMode = viewMode === 'expanded' ? 'compact' : 'expanded';
+  localStorage.setItem('rh_view_mode', viewMode);
+  updateViewToggle();
   renderMiners();
 }
 
@@ -1950,6 +2020,9 @@ function renderMiners() {
   empty.style.display = 'none';
   grid.style.display = 'flex';
 
+  const NOTE_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>`;
+  const DEL_ICON  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
+
   grid.innerHTML = userMiners.map(m => {
     const coin = COINS.find(c => c.sym === m.coin) || { sym: m.coin, color: '#6B7A8D', name: m.coin };
     const { gross, elecCost, net } = calcDailyEarnings(m);
@@ -1957,6 +2030,29 @@ function renderMiners() {
     const hrDisplay = esc(m.hashrate + ' ' + (m.hashrate_unit || ''));
     const hasNotes = !!(m.notes || m.serial_number);
     const safeColor = /^#[0-9a-fA-F]{3,8}$/.test(coin.color) ? coin.color : '#6B7A8D';
+    const qty = m.quantity ?? 1;
+
+    if (viewMode === 'compact') {
+      return `
+      <div class="miner-card compact">
+        <div class="miner-coin-bar" style="background:${safeColor};"></div>
+        <div class="compact-left">
+          <span class="miner-chip" style="color:${safeColor};border-color:${safeColor}40;font-size:10px;padding:2px 8px;">${esc(coin.sym)}</span>
+        </div>
+        <div class="compact-name">
+          ${esc(shortMinerName(m.miner_name))}
+          ${qty > 1 ? `<span class="compact-qty">×${qty}</span>` : ''}
+        </div>
+        <div class="compact-earn ${netCls}">
+          ${net >= 0 ? '+' : ''}$${net.toFixed(2)}<span class="compact-earn-sub">/day</span>
+        </div>
+        <div class="compact-actions">
+          <button class="btn-miner-note ${hasNotes ? 'has-notes' : ''}" onclick="openNotes('${m.id}')" title="Notes">${NOTE_ICON}</button>
+          <button class="btn-miner-del" onclick="deleteMiner('${m.id}')" title="Remove">${DEL_ICON}</button>
+        </div>
+      </div>`;
+    }
+
     return `
     <div class="miner-card">
       <div class="miner-coin-bar" style="background:${safeColor};"></div>
@@ -1981,7 +2077,7 @@ function renderMiners() {
         <div class="qty-label">Units</div>
         <div class="qty-ctrl">
           <button class="qty-btn" onclick="updateQuantity('${m.id}', -1)">−</button>
-          <div class="qty-val">${m.quantity ?? 1}</div>
+          <div class="qty-val">${qty}</div>
           <button class="qty-btn" onclick="updateQuantity('${m.id}', +1)">+</button>
         </div>
       </div>
@@ -1999,12 +2095,8 @@ function renderMiners() {
         <div class="miner-earn-gross" style="color:var(--red);">Elec $${elecCost.toFixed(2)}</div>
       </div>
       <div class="miner-actions">
-        <button class="btn-miner-note ${hasNotes ? 'has-notes' : ''}" onclick="openNotes('${m.id}')" title="Notes">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
-        </button>
-        <button class="btn-miner-del" onclick="deleteMiner('${m.id}')" title="Remove miner">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-        </button>
+        <button class="btn-miner-note ${hasNotes ? 'has-notes' : ''}" onclick="openNotes('${m.id}')" title="Notes">${NOTE_ICON}</button>
+        <button class="btn-miner-del" onclick="deleteMiner('${m.id}')" title="Remove miner">${DEL_ICON}</button>
       </div>
     </div>`;
   }).join('');
