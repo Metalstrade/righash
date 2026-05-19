@@ -371,6 +371,20 @@ nav {
   line-height: 1.6;
 }
 .notes-actions { display: flex; gap: 8px; margin-top: 16px; }
+.serial-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.serial-label-row .form-label { margin-bottom: 0; }
+.serial-nav { display: flex; align-items: center; gap: 4px; }
+.serial-nav-btn {
+  width: 24px; height: 24px; border-radius: 4px;
+  background: var(--bg4); border: 1px solid var(--border);
+  color: var(--muted2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; line-height: 1; padding: 0;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.serial-nav-btn:hover:not(:disabled) { background: var(--bg3); border-color: var(--border2); color: var(--text); }
+.serial-nav-btn:disabled { opacity: 0.3; cursor: default; }
+.serial-nav-pos { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted2); min-width: 40px; text-align: center; }
 .btn-notes-cancel {
   flex: 1; padding: 12px; border-radius: 4px; font-size: 11px; font-weight: 600;
   letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
@@ -896,7 +910,14 @@ footer {
     <div class="notes-modal-title">Miner Notes</div>
     <div class="notes-modal-miner" id="notes-modal-miner"></div>
     <div class="form-field">
-      <label class="form-label">Serial Number</label>
+      <div class="serial-label-row">
+        <label class="form-label" id="serial-unit-label">Serial Number</label>
+        <div class="serial-nav" id="serial-nav" style="display:none">
+          <button class="serial-nav-btn" id="serial-nav-prev" onclick="serialNav(-1)">‹</button>
+          <span class="serial-nav-pos">Unit <span id="serial-nav-cur">1</span> / <span id="serial-nav-total">1</span></span>
+          <button class="serial-nav-btn" id="serial-nav-next" onclick="serialNav(1)">›</button>
+        </div>
+      </div>
       <input type="text" id="notes-serial" class="form-input" placeholder="e.g. AN-L9-2024-XXXXX" autocomplete="off">
     </div>
     <div class="form-field">
@@ -1962,16 +1983,53 @@ function toggleView() {
 
 // ── MINER NOTES ──
 let notesMinerId = null;
+let serialsArr = [];
+let serialIdx = 0;
 
 function openNotes(id) {
   const m = userMiners.find(x => x.id === id);
   if (!m) return;
   notesMinerId = id;
+  const qty = m.quantity ?? 1;
+
+  // Parse serial_number: JSON array or legacy plain string
+  let parsed = [];
+  try { parsed = JSON.parse(m.serial_number || '[]'); } catch(e) {}
+  if (!Array.isArray(parsed)) parsed = m.serial_number ? [m.serial_number] : [];
+  serialsArr = Array.from({ length: qty }, (_, i) => parsed[i] || '');
+  serialIdx = 0;
+
   document.getElementById('notes-modal-miner').textContent = m.miner_name;
-  document.getElementById('notes-serial').value = m.serial_number || '';
   document.getElementById('notes-text').value = m.notes || '';
+
+  const nav = document.getElementById('serial-nav');
+  if (qty > 1) {
+    nav.style.display = 'flex';
+    document.getElementById('serial-nav-total').textContent = qty;
+    updateSerialNav();
+  } else {
+    nav.style.display = 'none';
+    document.getElementById('serial-unit-label').textContent = 'Serial Number';
+    document.getElementById('notes-serial').value = serialsArr[0] || '';
+  }
+
   document.getElementById('notes-overlay').classList.add('open');
   setTimeout(() => document.getElementById('notes-serial').focus(), 50);
+}
+
+function updateSerialNav() {
+  document.getElementById('serial-nav-cur').textContent = serialIdx + 1;
+  document.getElementById('serial-unit-label').textContent = `Serial Number — Unit ${serialIdx + 1}`;
+  document.getElementById('serial-nav-prev').disabled = serialIdx === 0;
+  document.getElementById('serial-nav-next').disabled = serialIdx === serialsArr.length - 1;
+  document.getElementById('notes-serial').value = serialsArr[serialIdx] || '';
+}
+
+function serialNav(dir) {
+  serialsArr[serialIdx] = document.getElementById('notes-serial').value.trim();
+  serialIdx = Math.max(0, Math.min(serialsArr.length - 1, serialIdx + dir));
+  updateSerialNav();
+  document.getElementById('notes-serial').focus();
 }
 
 function closeNotes() {
@@ -1981,11 +2039,13 @@ function closeNotes() {
 
 async function saveNotes() {
   if (!notesMinerId) return;
-  const serial = document.getElementById('notes-serial').value.trim();
-  const notes  = document.getElementById('notes-text').value.trim();
-  await sb.from('user_miners').update({ serial_number: serial, notes }).eq('id', notesMinerId).eq('user_id', currentUser.id);
+  serialsArr[serialIdx] = document.getElementById('notes-serial').value.trim();
+  const notes = document.getElementById('notes-text').value.trim();
+  const hasAny = serialsArr.some(s => s.length > 0);
+  const serialVal = hasAny ? JSON.stringify(serialsArr) : '';
+  await sb.from('user_miners').update({ serial_number: serialVal, notes }).eq('id', notesMinerId).eq('user_id', currentUser.id);
   const m = userMiners.find(x => x.id === notesMinerId);
-  if (m) { m.serial_number = serial; m.notes = notes; }
+  if (m) { m.serial_number = serialVal; m.notes = notes; }
   closeNotes();
   renderMiners();
   showToast('Notes saved', 'success');
