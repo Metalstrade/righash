@@ -258,9 +258,17 @@ nav {
 .algo-card-hash { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 600; color: var(--text); }
 .algo-card-unit { font-size: 11px; color: var(--muted); margin-top: 3px; }
 .chart-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; }
-.chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
 .chart-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted2); }
-.chart-period { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.chart-periods { display: flex; gap: 2px; }
+.chart-period-btn {
+  padding: 4px 10px; border-radius: 3px; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.06em; cursor: pointer; font-family: 'JetBrains Mono', monospace;
+  background: none; border: 1px solid transparent; color: var(--muted);
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.chart-period-btn:hover { color: var(--text); background: var(--bg4); }
+.chart-period-btn.active { color: var(--text); background: var(--bg4); border-color: var(--border); }
 .chart-wrap { position: relative; height: 240px; }
 .chart-empty { text-align: center; padding: 60px 0; }
 .chart-empty-title { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
@@ -809,7 +817,13 @@ footer {
       <div class="chart-section">
         <div class="chart-header">
           <div class="chart-title">Daily Net Profit</div>
-          <div class="chart-period" id="chart-period"></div>
+          <div class="chart-periods" id="chart-periods">
+            <button class="chart-period-btn" data-days="7"   onclick="setChartPeriod(7)">7D</button>
+            <button class="chart-period-btn" data-days="30"  onclick="setChartPeriod(30)">30D</button>
+            <button class="chart-period-btn" data-days="90"  onclick="setChartPeriod(90)">90D</button>
+            <button class="chart-period-btn" data-days="365" onclick="setChartPeriod(365)">1Y</button>
+            <button class="chart-period-btn active" data-days="0" onclick="setChartPeriod(0)">MAX</button>
+          </div>
         </div>
         <div id="chart-empty" class="chart-empty" style="display:none;">
           <div class="chart-empty-title">No data yet</div>
@@ -2073,32 +2087,52 @@ function renderAlgoCards() {
   }).join('');
 }
 
+let allSnapshots = [];
+let chartPeriodDays = 0; // 0 = MAX
+
 async function loadAndRenderChart() {
   const { data } = await sb.from('profit_snapshots')
     .select('snapshot_date, total_net')
     .eq('user_id', currentUser.id)
     .order('snapshot_date')
-    .limit(90);
+    .limit(1000);
+  allSnapshots = data || [];
+  renderChart();
+}
 
+function setChartPeriod(days) {
+  chartPeriodDays = days;
+  document.querySelectorAll('.chart-period-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.days) === days);
+  });
+  renderChart();
+}
+
+function renderChart() {
   const wrap  = document.getElementById('chart-wrap');
   const empty = document.getElementById('chart-empty');
-  const period = document.getElementById('chart-period');
 
-  if (!data || !data.length) {
+  let rows = allSnapshots;
+  if (chartPeriodDays > 0) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - chartPeriodDays);
+    const cutoffStr = cutoff.toISOString().split('T')[0];
+    rows = allSnapshots.filter(d => d.snapshot_date >= cutoffStr);
+  }
+
+  if (!rows.length) {
     wrap.style.display = 'none';
     empty.style.display = 'block';
-    period.textContent = '';
     return;
   }
   wrap.style.display = '';
   empty.style.display = 'none';
-  period.textContent = 'last ' + data.length + ' day' + (data.length !== 1 ? 's' : '');
 
-  const labels = data.map(d => {
+  const labels = rows.map(d => {
     const dt = new Date(d.snapshot_date + 'T12:00:00');
     return dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
   });
-  const values = data.map(d => parseFloat(d.total_net));
+  const values = rows.map(d => parseFloat(d.total_net));
 
   if (profitChart) { profitChart.destroy(); profitChart = null; }
 
@@ -2114,7 +2148,7 @@ async function loadAndRenderChart() {
         borderWidth: 2,
         fill: true,
         tension: 0.4,
-        pointRadius: data.length < 20 ? 4 : 2,
+        pointRadius: rows.length <= 30 ? 4 : rows.length <= 90 ? 2 : 0,
         pointBackgroundColor: '#10B981',
         pointBorderColor: 'transparent',
         pointHoverRadius: 5,
