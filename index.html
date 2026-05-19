@@ -235,7 +235,7 @@ nav {
 .period-btn:hover { color: var(--text); }
 .period-btn.active { background: var(--bg4); color: var(--text); }
 .btn-header-collapse {
-  display: none;
+  display: flex;
   width: 28px; height: 28px; border-radius: 4px;
   background: none; border: none; color: var(--muted); cursor: pointer;
   align-items: center; justify-content: center;
@@ -243,9 +243,6 @@ nav {
   margin-left: 2px;
 }
 .btn-header-collapse:hover { color: var(--text); }
-@media (max-width: 700px) {
-  .btn-header-collapse { display: flex; }
-}
 .dash-stats {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 12px; padding: 20px 24px;
