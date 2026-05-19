@@ -1926,7 +1926,7 @@ const NET_HR = {
   'ERGO': { perUnit: 3.6e-4,  unit: 'MH/s' },
   'ZEC':  { perUnit: 9.8e-5,  unit: 'KSol/s' },
   'ZEN':  { perUnit: 9.8e-5,  unit: 'KSol/s' },
-  'KDA':  { perUnit: 7.2,    unit: 'TH/s' },
+  'KDA':  { perUnit: 0.15,   unit: 'TH/s' },
   'ALEO': { perUnit: 0.8,   unit: 'MH/s' },
   'ALPH': { perUnit: 0.001, unit: 'GH/s' },
   'BCN':  { perUnit: 2000,  unit: 'KH/s' },
@@ -1957,7 +1957,6 @@ let nhScryptPerGH = null;
 // LTC/DOGE use NiceHash profcalc/devices instead
 const WTM_COINS = {
   BTC:  { id: 1,   scale: 1    },  // WTM: TH/s,   miner: TH/s
-  KDA:  { id: 292, scale: 1    },  // WTM: TH/s,   miner: TH/s
   XMR:  { id: 101, scale: 1    },  // WTM: KH/s,   miner: KH/s
   ZEC:  { id: 166, scale: 1    },  // WTM: KSol/s, miner: KSol/s
   ETC:  { id: 162, scale: 1    },  // WTM: MH/s,   miner: MH/s
