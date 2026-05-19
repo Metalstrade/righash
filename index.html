@@ -1960,9 +1960,9 @@ const NET_HR = {
   'ZEN':  { perUnit: 9.8e-5,  unit: 'KSol/s' },
   'KDA':  { perUnit: 0.40,   unit: 'TH/s' },  // ~200 PH/s network, ~126k KDA/day
   'ALEO': { perUnit: 0.8,   unit: 'MH/s' },
-  'ALPH': { perUnit: 0.05,  unit: 'GH/s' },  // typical ASIC/GPU earnings ~0.05 ALPH/GH/day
+  'ALPH': { perUnit: 0.001, unit: 'GH/s' },  // AL1 Pro ~16.6 TH/s earns ~16 ALPH/day
   'BCN':  { perUnit: 2000,  unit: 'KH/s' },
-  'DASH': { perUnit: 0.00022, unit: 'GH/s' },  // ~6 PH/s network, 576 blocks/day × 2.304 DASH
+  'DASH': { perUnit: 0.000133, unit: 'GH/s' }, // ~10 PH/s network, 576 blocks/day × 2.304 DASH
   'DCR':  { perUnit: 0.0005, unit: 'TH/s' },
   'GRIN': { perUnit: 0.002,  unit: 'GPS' },
   'GRS':  { perUnit: 0.005,  unit: 'GH/s' },
@@ -1996,7 +1996,7 @@ const WTM_COINS = {
   ERGO: { id: 340, scale: 1    },  // WTM: MH/s,   miner: MH/s
   CKB:  { id: 321, scale: 1000 },  // WTM: GH/s,   miner: TH/s → ×1000
   KAS:  { id: 352, scale: 1    },  // WTM: TH/s,   miner: TH/s
-  DASH: { id: 5,   scale: 1    },  // WTM: GH/s,   miner: GH/s
+  // DASH removed — WTM ID 5 returned wrong coin data; uses NET_HR fallback instead
   DCR:  { id: 152, scale: 1000 },  // WTM: GH/s,   miner: TH/s → ×1000
 };
 
