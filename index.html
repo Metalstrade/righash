@@ -43,6 +43,49 @@
   --red:     #DC2626;
   --green:   #000000;
 }
+/* ── SETTINGS MODAL ── */
+.settings-box {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 28px; width: 100%; max-width: 480px;
+  position: relative; max-height: 90vh; overflow-y: auto;
+}
+.settings-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.settings-tab {
+  flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600;
+  color: var(--muted); cursor: pointer; border: none; border-bottom: 2px solid transparent;
+  background: none; font-family: 'Inter', sans-serif; transition: color 0.15s, border-color 0.15s;
+}
+.settings-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.settings-section { margin-bottom: 22px; }
+.settings-section-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.settings-row { display: flex; align-items: center; gap: 8px; }
+.settings-row .form-input { flex: 1; }
+.settings-row .btn-settings-save {
+  height: 40px; padding: 0 16px; border-radius: 4px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace; background: var(--bg4); border: 1px solid var(--border2);
+  color: var(--text); transition: border-color 0.15s;
+}
+.settings-row .btn-settings-save:hover { border-color: var(--accent); }
+.settings-toggle { display: flex; gap: 2px; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 3px; width: fit-content; }
+.settings-toggle-btn {
+  padding: 6px 16px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  cursor: pointer; font-family: 'JetBrains Mono', monospace; background: none; border: none; color: var(--muted);
+  transition: background 0.12s, color 0.12s;
+}
+.settings-toggle-btn.active { background: var(--bg4); color: var(--text); }
+.settings-msg { font-size: 12px; margin-top: 8px; min-height: 18px; }
+.settings-msg.ok  { color: #10B981; }
+.settings-msg.err { color: var(--red); }
+.settings-select {
+  width: 100%; padding: 10px 12px; border-radius: 4px;
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  font-size: 14px; font-family: 'Inter', sans-serif; cursor: pointer;
+}
+.settings-select:focus { outline: none; border-color: var(--accent); }
 /* user dropdown */
 #user-menu-wrap { position: relative; display: none; }
 #user-menu {
@@ -749,6 +792,10 @@ footer {
       <div class="user-menu-header">
         <div class="user-menu-email" id="user-menu-email-full">—</div>
       </div>
+      <div class="user-menu-item" onclick="openSettings()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </div>
       <div class="user-menu-item" onclick="toggleTheme()">
         <svg id="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
         <span id="theme-label">Light mode</span>
@@ -1089,6 +1136,88 @@ footer {
       <button class="btn-form-submit" style="flex:1;" onclick="saveNotes()">Save</button>
       <button class="btn-notes-cancel" onclick="closeNotes()">Cancel</button>
     </div>
+  </div>
+</div>
+
+<!-- ── SETTINGS MODAL ── -->
+<div class="modal-overlay" id="settings-overlay" onclick="if(event.target===this)closeSettings()">
+  <div class="settings-box">
+    <button class="modal-close" onclick="closeSettings()">✕</button>
+    <div style="font-size:18px;font-weight:700;margin-bottom:20px;">Settings</div>
+    <div class="settings-tabs">
+      <button class="settings-tab active" id="stab-account" onclick="switchSettingsTab('account')">Account</button>
+      <button class="settings-tab" id="stab-dashboard" onclick="switchSettingsTab('dashboard')">Dashboard</button>
+    </div>
+
+    <!-- Account tab -->
+    <div id="spanel-account">
+      <div class="settings-section">
+        <div class="settings-section-title">Email</div>
+        <div class="form-field" style="margin-bottom:8px;">
+          <label class="form-label">Current</label>
+          <div id="set-cur-email" style="font-size:13px;color:var(--muted2);padding:4px 0;"></div>
+        </div>
+        <div class="form-field" style="margin-bottom:8px;">
+          <label class="form-label">New email</label>
+          <div class="settings-row">
+            <input type="email" id="set-new-email" class="form-input" placeholder="new@email.com" autocomplete="off">
+            <button class="btn-settings-save" onclick="saveEmail()">Save</button>
+          </div>
+        </div>
+        <div class="settings-msg" id="set-email-msg"></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Password</div>
+        <div class="form-field" style="margin-bottom:8px;">
+          <label class="form-label">New password</label>
+          <div class="settings-row">
+            <input type="password" id="set-new-password" class="form-input" placeholder="Min. 6 characters" autocomplete="new-password">
+            <button class="btn-settings-save" onclick="savePassword()">Save</button>
+          </div>
+        </div>
+        <div class="settings-msg" id="set-password-msg"></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Default Electricity Rate</div>
+        <div class="settings-row">
+          <input type="number" id="set-elec-rate" class="form-input" step="0.001" min="0.001" max="9.999" placeholder="0.100">
+          <span style="font-size:12px;color:var(--muted);white-space:nowrap;">USD / kWh</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">Pre-fills the electricity field when adding a new miner.</div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Currency</div>
+        <div class="settings-toggle" id="currency-toggle">
+          <button class="settings-toggle-btn active" data-cur="USD" onclick="selectCurrency('USD')">USD $</button>
+          <button class="settings-toggle-btn" data-cur="EUR" onclick="selectCurrency('EUR')">EUR €</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">Converts all earnings using the live EUR/USD rate.</div>
+      </div>
+    </div>
+
+    <!-- Dashboard tab -->
+    <div id="spanel-dashboard" style="display:none;">
+      <div class="settings-section">
+        <div class="settings-section-title">Default Period</div>
+        <div class="settings-toggle" id="period-default-toggle">
+          <button class="settings-toggle-btn active" data-p="day" onclick="selectDefaultPeriod('day')">Day</button>
+          <button class="settings-toggle-btn" data-p="month" onclick="selectDefaultPeriod('month')">Month</button>
+          <button class="settings-toggle-btn" data-p="year" onclick="selectDefaultPeriod('year')">Year</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">Which period is selected when you open the dashboard.</div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Timezone</div>
+        <select id="set-timezone" class="settings-select"></select>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">Affects the date shown in the dashboard header.</div>
+      </div>
+    </div>
+
+    <button class="btn-form-submit" onclick="saveSettings()">Save Changes</button>
   </div>
 </div>
 
@@ -2064,6 +2193,141 @@ function toggleTheme() {
   applyTheme(_theme === 'light' ? 'dark' : 'light');
 }
 
+// ── SETTINGS ──
+let userCurrency    = localStorage.getItem('rh_currency')       || 'USD';
+let userDefaultElec = parseFloat(localStorage.getItem('rh_default_elec')) || 0.10;
+let userDefaultPeriod = localStorage.getItem('rh_default_period') || 'day';
+let userTimezone    = localStorage.getItem('rh_timezone')        || Intl.DateTimeFormat().resolvedOptions().timeZone;
+let eurRate = null;
+
+async function fetchEurRate() {
+  try {
+    const r = await fetch('https://api.frankfurter.app/latest?from=USD&to=EUR');
+    if (r.ok) { const d = await r.json(); eurRate = d.rates?.EUR || null; }
+  } catch {}
+}
+
+function fmtMoney(v) {
+  const abs = Math.abs(v);
+  if (userCurrency === 'EUR' && eurRate) {
+    return (v < 0 ? '-' : '') + '€' + (abs * eurRate).toFixed(2);
+  }
+  return (v < 0 ? '-' : '') + '$' + abs.toFixed(2);
+}
+
+const TIMEZONES = [
+  'UTC','Europe/London','Europe/Lisbon','Europe/Paris','Europe/Berlin',
+  'Europe/Ljubljana','Europe/Warsaw','Europe/Helsinki','Europe/Moscow',
+  'America/New_York','America/Chicago','America/Denver','America/Los_Angeles',
+  'America/Sao_Paulo','Africa/Cairo','Asia/Dubai','Asia/Kolkata',
+  'Asia/Bangkok','Asia/Singapore','Asia/Tokyo','Australia/Sydney'
+];
+
+function initSettings() {
+  // Populate timezone select
+  const sel = document.getElementById('set-timezone');
+  if (sel && !sel.options.length) {
+    TIMEZONES.forEach(tz => {
+      const opt = document.createElement('option');
+      opt.value = opt.textContent = tz;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+function openSettings() {
+  document.getElementById('user-menu').style.display = 'none';
+  // Pre-fill current values
+  const email = currentUser?.email || '';
+  document.getElementById('set-cur-email').textContent = email;
+  document.getElementById('set-new-email').value = '';
+  document.getElementById('set-new-password').value = '';
+  document.getElementById('set-email-msg').textContent = '';
+  document.getElementById('set-password-msg').textContent = '';
+  document.getElementById('set-elec-rate').value = userDefaultElec.toFixed(3);
+  // Currency toggle
+  document.querySelectorAll('#currency-toggle .settings-toggle-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.cur === userCurrency));
+  // Default period toggle
+  document.querySelectorAll('#period-default-toggle .settings-toggle-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.p === userDefaultPeriod));
+  // Timezone
+  const sel = document.getElementById('set-timezone');
+  sel.value = userTimezone;
+  if (!sel.value) sel.value = 'UTC';
+  // Show account tab
+  switchSettingsTab('account');
+  document.getElementById('settings-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function switchSettingsTab(tab) {
+  document.getElementById('spanel-account').style.display   = tab === 'account'   ? '' : 'none';
+  document.getElementById('spanel-dashboard').style.display = tab === 'dashboard' ? '' : 'none';
+  document.querySelectorAll('.settings-tab').forEach(b =>
+    b.classList.toggle('active', b.id === 'stab-' + tab));
+}
+
+function selectCurrency(cur) {
+  userCurrency = cur;
+  document.querySelectorAll('#currency-toggle .settings-toggle-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.cur === cur));
+}
+
+function selectDefaultPeriod(p) {
+  userDefaultPeriod = p;
+  document.querySelectorAll('#period-default-toggle .settings-toggle-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.p === p));
+}
+
+async function saveEmail() {
+  const val = document.getElementById('set-new-email').value.trim();
+  const msg = document.getElementById('set-email-msg');
+  if (!val) { msg.className = 'settings-msg err'; msg.textContent = 'Enter a new email.'; return; }
+  msg.className = 'settings-msg'; msg.textContent = 'Saving…';
+  const { error } = await sb.auth.updateUser({ email: val });
+  if (error) { msg.className = 'settings-msg err'; msg.textContent = error.message; }
+  else { msg.className = 'settings-msg ok'; msg.textContent = 'Confirmation email sent. Check your inbox.'; }
+}
+
+async function savePassword() {
+  const val = document.getElementById('set-new-password').value;
+  const msg = document.getElementById('set-password-msg');
+  if (val.length < 6) { msg.className = 'settings-msg err'; msg.textContent = 'Minimum 6 characters.'; return; }
+  msg.className = 'settings-msg'; msg.textContent = 'Saving…';
+  const { error } = await sb.auth.updateUser({ password: val });
+  if (error) { msg.className = 'settings-msg err'; msg.textContent = error.message; }
+  else { msg.className = 'settings-msg ok'; msg.textContent = 'Password updated.'; document.getElementById('set-new-password').value = ''; }
+}
+
+function saveSettings() {
+  const elec = parseFloat(document.getElementById('set-elec-rate').value);
+  if (!isNaN(elec) && elec > 0) {
+    userDefaultElec = Math.round(elec * 1000) / 1000;
+    localStorage.setItem('rh_default_elec', userDefaultElec);
+  }
+  userTimezone = document.getElementById('set-timezone').value || userTimezone;
+  localStorage.setItem('rh_currency', userCurrency);
+  localStorage.setItem('rh_default_period', userDefaultPeriod);
+  localStorage.setItem('rh_timezone', userTimezone);
+  // Apply immediately
+  setPeriod(userDefaultPeriod);
+  if (userCurrency === 'EUR' && !eurRate) fetchEurRate().then(() => renderMiners());
+  else renderMiners();
+  // Update date display with new timezone
+  const now = new Date();
+  document.getElementById('dash-date').textContent = now.toLocaleDateString('en-US', {
+    timeZone: userTimezone, weekday:'long', year:'numeric', month:'long', day:'numeric'
+  });
+  closeSettings();
+  showToast('Settings saved', 'success');
+}
+
 // ── MATH CAPTCHA ──
 function generateCaptcha(prefix) {
   const a = Math.floor(Math.random() * 9) + 1;
@@ -2109,7 +2373,8 @@ function onSignIn(user) {
   const h = now.getHours();
   const greeting = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
   document.getElementById('dash-greeting').textContent = greeting;
-  document.getElementById('dash-date').textContent = now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('dash-date').textContent = now.toLocaleDateString('en-US', { timeZone: userTimezone, weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  setPeriod(userDefaultPeriod);
   loadMiners();
 }
 
@@ -2490,7 +2755,7 @@ function renderMiners() {
           ${qty > 1 ? `<span class="compact-qty">×${qty}</span>` : ''}
         </div>
         <div class="compact-earn ${netCls}">
-          ${net >= 0 ? '+' : ''}$${net.toFixed(2)}<span class="compact-earn-sub">${pLabel}</span>
+          ${net >= 0 ? '+' : ''}${fmtMoney(net)}<span class="compact-earn-sub">${pLabel}</span>
         </div>
         <div class="compact-actions">
           <button class="btn-miner-note ${hasNotes ? 'has-notes' : ''}" onclick="openNotes('${m.id}')" title="Notes">${NOTE_ICON}</button>
@@ -2536,9 +2801,9 @@ function renderMiners() {
         </div>
       </div>
       <div class="miner-earnings">
-        <div class="miner-earn-net ${netCls}">${net >= 0 ? '+' : ''}$${net.toFixed(2)}${pLabel}</div>
-        <div class="miner-earn-gross">Gross $${gross.toFixed(2)}</div>
-        <div class="miner-earn-gross" style="color:var(--red);">Elec $${elecCost.toFixed(2)}</div>
+        <div class="miner-earn-net ${netCls}">${net >= 0 ? '+' : ''}${fmtMoney(net)}${pLabel}</div>
+        <div class="miner-earn-gross">Gross ${fmtMoney(gross)}</div>
+        <div class="miner-earn-gross" style="color:var(--red);">Elec ${fmtMoney(elecCost)}</div>
       </div>
       <div class="miner-actions">
         <button class="btn-miner-note ${hasNotes ? 'has-notes' : ''}" onclick="openNotes('${m.id}')" title="Notes">${NOTE_ICON}</button>
@@ -2560,20 +2825,20 @@ function updateStats() {
     totalUnits += qty;
   });
   const mult = PERIOD_MULT[profitPeriod] || 1;
-  document.getElementById('stat-daily').textContent = '$' + (totalGross * mult).toFixed(2);
+  document.getElementById('stat-daily').textContent = fmtMoney(totalGross * mult);
   const netEl = document.getElementById('stat-net');
-  netEl.textContent = (totalNet >= 0 ? '+' : '') + '$' + (totalNet * mult).toFixed(2);
+  netEl.textContent = (totalNet >= 0 ? '+' : '') + fmtMoney(totalNet * mult);
   netEl.style.color = totalNet >= 0 ? '#10B981' : 'var(--red)';
   document.getElementById('stat-power').textContent = totalWatts >= 1000 ? (totalWatts/1000).toFixed(2) + ' kW' : totalWatts + ' W';
-  document.getElementById('stat-elec').textContent = '-$' + ((totalGross - totalNet) * mult).toFixed(2);
+  document.getElementById('stat-elec').textContent = '-' + fmtMoney((totalGross - totalNet) * mult);
   document.getElementById('stat-count').textContent = totalUnits;
 }
 
 // ── ADD MINER MODAL ──
 function openAddMiner() {
-  addElecRate = 0.10;
+  addElecRate = userDefaultElec;
   addSelectedCoin = null;
-  document.getElementById('add-elec-val').textContent = '0.100';
+  document.getElementById('add-elec-val').textContent = addElecRate.toFixed(3);
   document.getElementById('add-error').style.display = 'none';
   document.getElementById('hw-search').value = '';
   document.getElementById('hw-list').classList.remove('open');
@@ -2799,6 +3064,8 @@ function showToast(msg, type) {
 
 // ── INIT ──
 initTheme();
+initSettings();
+fetchEurRate();
 // Wait for all three price sources before snapshotting, so the saved value
 // uses live WTM rates rather than the stale NET_HR fallbacks.
 Promise.allSettled([initTicker(), fetchNhProfitability(), fetchWtmProfitability()])
