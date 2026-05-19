@@ -921,7 +921,10 @@ footer {
       <input type="text" id="notes-serial" class="form-input" placeholder="e.g. AN-L9-2024-XXXXX" autocomplete="off">
     </div>
     <div class="form-field">
-      <label class="form-label">Notes</label>
+      <div class="serial-label-row">
+        <label class="form-label">Notes</label>
+        <button class="serial-nav-btn" onclick="saveNotes()" title="Save (Ctrl+Enter)" style="width:auto;padding:0 8px;font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.06em;color:var(--text);">SAVE</button>
+      </div>
       <textarea id="notes-text" class="form-input notes-textarea" placeholder="Location, service history, issues, hosting details…" rows="5" onkeydown="if(event.ctrlKey&&event.key==='Enter')saveNotes()"></textarea>
     </div>
     <div class="notes-actions">
@@ -1945,7 +1948,8 @@ async function updateElec(id, delta) {
   const m = userMiners.find(x => x.id === id);
   if (!m) return;
   const rate = Math.max(0.001, Math.round((m.electricity_rate + delta) * 1000) / 1000);
-  await sb.from('user_miners').update({ electricity_rate: rate }).eq('id', id).eq('user_id', currentUser.id);
+  const { error } = await sb.from('user_miners').update({ electricity_rate: rate }).eq('id', id).eq('user_id', currentUser.id);
+  if (error) { showToast('Save failed: ' + error.message, 'error'); return; }
   m.electricity_rate = rate;
   renderMiners();
 }
@@ -1954,7 +1958,8 @@ async function updateQuantity(id, delta) {
   const m = userMiners.find(x => x.id === id);
   if (!m) return;
   const qty = Math.min(100, Math.max(1, (m.quantity ?? 1) + delta));
-  await sb.from('user_miners').update({ quantity: qty }).eq('id', id).eq('user_id', currentUser.id);
+  const { error } = await sb.from('user_miners').update({ quantity: qty }).eq('id', id).eq('user_id', currentUser.id);
+  if (error) { showToast('Save failed: ' + error.message, 'error'); return; }
   m.quantity = qty;
   renderMiners();
 }
@@ -2043,7 +2048,8 @@ async function saveNotes() {
   const notes = document.getElementById('notes-text').value.trim();
   const hasAny = serialsArr.some(s => s.length > 0);
   const serialVal = hasAny ? JSON.stringify(serialsArr) : '';
-  await sb.from('user_miners').update({ serial_number: serialVal, notes }).eq('id', notesMinerId).eq('user_id', currentUser.id);
+  const { error } = await sb.from('user_miners').update({ serial_number: serialVal, notes }).eq('id', notesMinerId).eq('user_id', currentUser.id);
+  if (error) { showToast('Save failed: ' + error.message, 'error'); return; }
   const m = userMiners.find(x => x.id === notesMinerId);
   if (m) { m.serial_number = serialVal; m.notes = notes; }
   closeNotes();
