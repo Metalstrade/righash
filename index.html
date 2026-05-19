@@ -933,9 +933,14 @@ footer {
       <div class="stat-card-sub">total across all miners</div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-label">Active Miners</div>
-      <div class="stat-card-val" id="stat-count">0</div>
-      <div class="stat-card-sub">devices tracked</div>
+      <div class="stat-card-label">Online</div>
+      <div class="stat-card-val" id="stat-online" style="color:#10B981;">0</div>
+      <div class="stat-card-sub">miners active</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Offline</div>
+      <div class="stat-card-val" id="stat-offline" style="color:var(--muted2);">0</div>
+      <div class="stat-card-sub">miners inactive</div>
     </div>
   </div>
 
@@ -3051,14 +3056,15 @@ function renderMiners() {
 }
 
 function updateStats() {
-  let totalGross = 0, totalNet = 0, totalWatts = 0, totalUnits = 0;
+  let totalGross = 0, totalNet = 0, totalWatts = 0, onlineUnits = 0, offlineUnits = 0;
   userMiners.forEach(m => {
     const qty = m.quantity ?? 1;
+    const active = m.is_active ?? true;
     const { gross, net } = calcDailyEarnings(m);
     totalGross += gross;
     totalNet += net;
     totalWatts += m.power_watts * qty;
-    totalUnits += qty;
+    if (active) onlineUnits += qty; else offlineUnits += qty;
   });
   const mult = PERIOD_MULT[profitPeriod] || 1;
   document.getElementById('stat-daily').textContent = fmtMoney(totalGross * mult);
@@ -3067,7 +3073,8 @@ function updateStats() {
   netEl.style.color = totalNet >= 0 ? '#10B981' : 'var(--red)';
   document.getElementById('stat-power').textContent = totalWatts >= 1000 ? (totalWatts/1000).toFixed(2) + ' kW' : totalWatts + ' W';
   document.getElementById('stat-elec').textContent = '-' + fmtMoney((totalGross - totalNet) * mult);
-  document.getElementById('stat-count').textContent = totalUnits;
+  document.getElementById('stat-online').textContent = onlineUnits;
+  document.getElementById('stat-offline').textContent = offlineUnits;
 }
 
 // ── ADD MINER MODAL ──
