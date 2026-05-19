@@ -757,6 +757,38 @@ footer {
   text-align: center; color: var(--muted); font-size: 12px;
   display: flex; align-items: center; justify-content: center; gap: 8px;
 }
+/* Cookie banner */
+#cookie-banner {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+  background: var(--bg2); border-top: 1px solid var(--border2);
+  padding: 16px 24px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.4);
+  transform: translateY(100%); opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+#cookie-banner.show { transform: translateY(0); opacity: 1; }
+.cookie-text { flex: 1; min-width: 200px; font-size: 12px; color: var(--muted2); line-height: 1.5; }
+.cookie-text a { color: var(--muted2); text-decoration: underline; }
+.cookie-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.btn-cookie-accept {
+  padding: 8px 18px; border-radius: 4px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  background: #fff; border: 1px solid #fff; color: #000;
+}
+.btn-cookie-essential {
+  padding: 8px 18px; border-radius: 4px; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  background: none; border: 1px solid var(--border2); color: var(--muted2);
+}
+.btn-cookie-essential:hover { color: var(--text); border-color: var(--muted2); }
+@media (max-width: 600px) {
+  #cookie-banner { padding: 14px 16px; }
+  .cookie-actions { width: 100%; }
+  .btn-cookie-accept, .btn-cookie-essential { flex: 1; text-align: center; }
+}
 </style>
 </head>
 <body>
@@ -1306,6 +1338,17 @@ footer {
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- Cookie consent -->
+<div id="cookie-banner" role="dialog" aria-label="Cookie consent">
+  <div class="cookie-text">
+    🍪 We use cookies and local storage to keep you signed in and save your preferences (theme, electricity rate, currency). No tracking or advertising cookies are used.
+  </div>
+  <div class="cookie-actions">
+    <button class="btn-cookie-essential" onclick="cookieConsent('essential')">Essential Only</button>
+    <button class="btn-cookie-accept" onclick="cookieConsent('accepted')">Accept All</button>
+  </div>
+</div>
 
 <script>
 // ── SUPABASE ──
@@ -3353,6 +3396,21 @@ function showToast(msg, type) {
   t.className = 'toast show' + (type ? ' ' + type : '');
   setTimeout(() => { t.className = 'toast'; }, 2800);
 }
+
+// ── COOKIE CONSENT ──
+function cookieConsent(choice) {
+  localStorage.setItem('rh_cookie_consent', choice);
+  const b = document.getElementById('cookie-banner');
+  b.classList.remove('show');
+  setTimeout(() => { b.style.display = 'none'; }, 350);
+}
+(function initCookieBanner() {
+  if (!localStorage.getItem('rh_cookie_consent')) {
+    const b = document.getElementById('cookie-banner');
+    b.style.display = 'flex';
+    requestAnimationFrame(() => requestAnimationFrame(() => b.classList.add('show')));
+  }
+})();
 
 // ── INIT ──
 initTheme();
