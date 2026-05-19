@@ -1957,6 +1957,7 @@ let nhScryptPerGH = null;
 // LTC/DOGE use NiceHash profcalc/devices instead
 const WTM_COINS = {
   BTC:  { id: 1,   scale: 1    },  // WTM: TH/s,   miner: TH/s
+  KDA:  { id: 292, scale: 1    },  // WTM: TH/s,   miner: TH/s
   XMR:  { id: 101, scale: 1    },  // WTM: KH/s,   miner: KH/s
   ZEC:  { id: 166, scale: 1    },  // WTM: KSol/s, miner: KSol/s
   ETC:  { id: 162, scale: 1    },  // WTM: MH/s,   miner: MH/s
@@ -2052,7 +2053,7 @@ async function initTicker() {
   // Crypto from CoinGecko
   let crypto = {};
   try {
-    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,dogecoin,kaspa,nervos-network,monero,ethereum-classic,ravencoin,ergo,zcash&vs_currencies=usd&include_24hr_change=true');
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,dogecoin,kaspa,nervos-network,monero,ethereum-classic,ravencoin,ergo,zcash,kadena&vs_currencies=usd&include_24hr_change=true');
     if (r.ok) crypto = await r.json();
     // Store for profitability
     if (crypto['bitcoin'])          coinPrices['BTC']  = crypto['bitcoin'].usd;
@@ -2065,6 +2066,7 @@ async function initTicker() {
     if (crypto['ravencoin'])        coinPrices['RVN']  = crypto['ravencoin'].usd;
     if (crypto['ergo'])             coinPrices['ERGO'] = crypto['ergo'].usd;
     if (crypto['zcash'])            coinPrices['ZEC']  = crypto['zcash'].usd;
+    if (crypto['kadena'])           coinPrices['KDA']  = crypto['kadena'].usd;
     // Re-render miners now that prices are available
     if (userMiners.length) renderMiners();
   } catch {}
@@ -3173,10 +3175,10 @@ setInterval(fetchWtmProfitability, 5 * 60 * 1000);
 // Refresh prices every 60s
 setInterval(async () => {
   try {
-    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,dogecoin,kaspa,nervos-network,monero,ravencoin,ergo,zcash&vs_currencies=usd');
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,dogecoin,kaspa,nervos-network,monero,ravencoin,ergo,zcash,kadena&vs_currencies=usd');
     if (!r.ok) return;
     const d = await r.json();
-    const map = { bitcoin:'BTC', ethereum:'ETH', dogecoin:'DOGE', kaspa:'KAS', 'nervos-network':'CKB', monero:'XMR', ravencoin:'RVN', ergo:'ERGO', zcash:'ZEC' };
+    const map = { bitcoin:'BTC', ethereum:'ETH', dogecoin:'DOGE', kaspa:'KAS', 'nervos-network':'CKB', monero:'XMR', ravencoin:'RVN', ergo:'ERGO', zcash:'ZEC', kadena:'KDA' };
     Object.entries(map).forEach(([cg, sym]) => { if (d[cg]) coinPrices[sym] = d[cg].usd; });
     if (userMiners.length) renderMiners();
   } catch {}
