@@ -3007,6 +3007,13 @@ async function saveNotes() {
 }
 
 // ── RENDER MINERS ──
+// Convert hashrate between units (MH/s, GH/s, TH/s, PH/s)
+const HR_SCALE = { 'MH/s': 1, 'GH/s': 1e3, 'TH/s': 1e6, 'PH/s': 1e9 };
+function hrConvert(hr, from, to) {
+  if (from === to) return hr;
+  return hr * (HR_SCALE[from] || HR_SCALE['TH/s']) / (HR_SCALE[to] || HR_SCALE['TH/s']);
+}
+
 function calcDailyEarnings(miner) {
   if (!(miner.is_active ?? true)) return { gross: 0, elecCost: 0, net: 0 };
   const coin = miner.coin;
@@ -3014,14 +3021,16 @@ function calcDailyEarnings(miner) {
   const rate = miner.electricity_rate ?? userDefaultElec;
   const elecCost = (miner.power_watts / 1000) * 24 * rate * qty;
   if ((coin === 'LTC' || coin === 'DOGE') && nhScryptPerGH != null && coinPrices['BTC']) {
-    const gross = miner.hashrate * nhScryptPerGH * coinPrices['BTC'] * qty;
+    const hr = hrConvert(miner.hashrate, miner.hashrate_unit || 'GH/s', 'GH/s');
+    const gross = hr * nhScryptPerGH * coinPrices['BTC'] * qty;
     return { gross, elecCost, net: gross - elecCost };
   }
   const price = coinPrices[coin] || 0;
   const net_hr = NET_HR[coin];
   if (!net_hr || !price) return { gross: 0, elecCost, net: -elecCost };
   const perUnit = (wtmPerUnit[coin] > 0) ? wtmPerUnit[coin] : net_hr.perUnit;
-  const gross = miner.hashrate * perUnit * price * qty;
+  const hr = hrConvert(miner.hashrate, miner.hashrate_unit || net_hr.unit, net_hr.unit);
+  const gross = hr * perUnit * price * qty;
   return { gross, elecCost, net: gross - elecCost };
 }
 
